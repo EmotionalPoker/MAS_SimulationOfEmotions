@@ -7,8 +7,8 @@ Created on Tue Sep 24 21:37:28 2019
 
 from PokerGame import *
 
-action_dictionary = {'pre_flop':['CALL','RAISE','FOLD'],'flop':[]}
-#OpenAI Gym Environment for Poker
+action_dictionary = {'pre_flop':['CALL','RAISE','FOLD'],'flop':['CHECK','BET','RAISE','FOLD'],'turn':['CHECK','BET','RAISE','FOLD'],'river':['CHECK','BET','RAISE','FOLD']}
+#Gym Environment for Poker
 class PokerEnvironment(object):
     
     
@@ -32,6 +32,16 @@ class PokerEnvironment(object):
         self.bets_placed = []
         self.pointer = 0
         self.folden_indexes = []
+        self.pot = 0
+        self.community_cards = []
+        
+        
+        
+        
+        
+        
+        
+        
         pass
     
     def reset(self):
@@ -60,7 +70,7 @@ class PokerEnvironment(object):
             del a[index]
             try:
                 del b[index]
-            except Exceptions as e:
+            except Exception as e:
                 pass
             return a,b
     def get_player_actions(self):
@@ -68,9 +78,71 @@ class PokerEnvironment(object):
         action_list = action_dictionary[self.stage]
         
         for i in range(self.n_players):
-            action = self.player_objects[i].make_decision(self.bets_placed,i,None)
+            if self.stage == 'pre_flop':
+                action,raise_amount = self.player_objects[i].make_decision(self.bets_placed,i,None,self.minimum_bet_amount)
+            else:
+                action,raise_amount = self.player_objects[i].make_decision(self.bets_placed,i,self.community_cards,self.minimum_bet_amount)
+            
             
             action_str = action_list[action]
+            if self.stage == 'flop' or self.stage == 'turn' or self.stage == 'river':
+                if action_str == "CHECK":
+                    try:
+                        if self.bets_placed[i-1] > self.bets_placed[i]:
+                            i=i-1
+                            continue
+                        else:
+                            pass
+                    except Exception as e:
+                        if self.bets_placed[-1] > self.bets_placed[i]:
+                            i=len(self.bets_placed)-1
+                            continue
+                        else:
+                            pass
+                        
+                        
+                if action_str == "BET":
+                    
+                    if len(self.bets_placed)>0:
+                        
+                        bet_amount  = self.minimum_bet_amount
+                        self.pointer = i
+                        try:
+                            self.bets_placed[i] = bet_amount
+                        except Exception as e:
+                            self.bets_placed.append(bet_amount)
+                        self.player_objects[i].current_coins -= bet_amount
+                        self.minimum_bet_amount = bet_amount
+                        
+                    else:
+                        self.bets_placed.append(self.minimum_bet_amount)
+                        self.player_objects[i].current_coins -= self.minimum_bet_amount
+                        
+                if action_str == "RAISE":
+                    if len(self.bets_placed)>0:
+                        bet_amount = raise_amount
+                        self.pointer = i
+                        try:
+                            self.bets_placed[i] = bet_amount
+                        except Exception as e:
+                            self.bets_placed.append(bet_amount)
+                        self.player_objects[i].current_coins -= bet_amount
+                        self.minimum_bet_amount = bet_amount
+                        
+                    else:
+                        self.bets_placed.append(raise_amount)
+                        self.minimum_bet_amount = raise_amount 
+                        self.player_objects[i].current_coins -= self.minimum_bet_amount
+                
+                if action_str == "FOLD":
+                    self.folden_indexes.append(i)
+                
+                
+                
+                
+                
+                
+                
             if self.stage == 'pre_flop':
                 
                 if action_str == 'CALL':
@@ -91,7 +163,7 @@ class PokerEnvironment(object):
                         self.player_objects[i].current_coins -= self.minimum_bet_amount
                 if action_str == "RAISE":
                     if len(self.bets_placed)>0:
-                        bet_amount = self.minimum_bet_amount*2
+                        bet_amount = raise_amount
                         self.pointer = i
                         try:
                             self.bets_placed[i] = bet_amount
@@ -101,8 +173,8 @@ class PokerEnvironment(object):
                         self.minimum_bet_amount = bet_amount
                         
                     else:
-                        self.bets_placed.append(self.minimum_bet_amount*2)
-                        self.minimum_bet_amount *= 2
+                        self.bets_placed.append(raise_amount)
+                        self.minimum_bet_amount = raise_amount 
                         self.player_objects[i].current_coins -= self.minimum_bet_amount
                 
                 if action_str == "FOLD":
@@ -117,7 +189,11 @@ class PokerEnvironment(object):
             
             self.folden_indexes = [x-1 for x in self.folden_indexes]
         self.folden_indexes=[]
-        maximum = max(self.bets_placed)
+        try:
+            maximum = max(self.bets_placed)
+        except:
+            print("all folded")
+            return
         temp = self.bets_placed
         temp  = [x - maximum for x in temp]
         if sum(temp) != 0:
@@ -135,17 +211,61 @@ class PokerEnvironment(object):
         self.stage = 'pre_flop'
         self.set_stage()
         self.get_player_actions()
+        self.pot += sum(self.bets_placed)
+        for i in range(len(self.bets_placed)):
+            self.bets_placed[i] = 0
+             
+        self.minimum_bet_amount = 10
         
-        
+        print('PreFlop Done')
         
         
         
         pass
     def flop(self):
+        self.dealer = Player()
+        self.dealer.draw_hand(self.main_deck)
+        self.dealer.draw_hand(self.main_deck)
+        self.dealer.draw_hand(self.main_deck)
+        self.dealer.hand = self.dealer.return_hand()
+        self.community_cards = self.dealer.hand
+        
+        self.stage = 'flop'
+        self.set_stage()
+        self.get_player_actions()
+        self.pot += sum(self.bets_placed)
+        for i in range(len(self.bets_placed)):
+            self.bets_placed[i] = 0
+             
+        self.minimum_bet_amount = 10
+        print('Flop Done')
         pass
     def turn(self):
+        self.dealer.draw_hand(self.main_deck)
+        self.community_cards = self.dealer.hand
+        
+        self.stage = 'turn'
+        self.set_stage()
+        self.get_player_actions()
+        self.pot += sum(self.bets_placed)
+        for i in range(len(self.bets_placed)):
+            self.bets_placed[i] = 0
+             
+        self.minimum_bet_amount = 10
+        print('Turn Done')
         pass
     def river(self):
+        self.dealer.draw_hand(self.main_deck)
+        self.community_cards = self.dealer.hand
+        
+        self.stage = 'river'
+        self.set_stage()
+        self.get_player_actions()
+        self.pot += sum(self.bets_placed)
+        for i in range(len(self.bets_placed)):
+            self.bets_placed[i] = 0
+             
+        self.minimum_bet_amount = 10
         pass
     
     def show(self):
@@ -177,12 +297,15 @@ class Agent(object):
         self.stage = stage
         self.available_actions = action_dictionary[self.stage]
         
-    def make_decision(self, bets_placed,player_id,community_cards):
+    def make_decision(self, bets_placed,player_id,community_cards,minimum_bet_amount):
         print("Bets Placed")
         print(bets_placed,self.current_coins)
-        print("Player ID:",player_id)
-        a = input("Input for player:")
-        return int(a)
+        print("Player ID:",player_id, "Controls:",self.available_actions)
+        print("Community Cards:",community_cards)
+        #a = input("Input for player:")
+        #print(self.available_actions)
+        a = random.randint(0,len(self.available_actions)-1)
+        return int(a),minimum_bet_amount*2
         pass
     
     
@@ -225,6 +348,10 @@ env = PokerEnvironment(players_list)
 env.reset()
 env.show()
 env.pre_flop()
+env.flop()
+env.turn()
+env.river()
+env.show()
 
 
 
