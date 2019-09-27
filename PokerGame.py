@@ -5,19 +5,23 @@ import time
 
 
 class Card:
+    #Card class to create and return a card object.
     def __init__(self, value, suit):
         self.value = value
         self.suit = suit
 
     def return_card(self):
+        #Returns card object in the format CardRank_CardSuit.
         return "{}_{}".format(self.value, self.suit)
 
 
 class Deck:
+    #Deck class builds the deck of cards consisting of card objects in straight and/or shuffle format. 
     def __init__(self):
         self.cards = []
 
     def build_deck(self):
+        #Builds the deck of cards in straight format.
         for suit in ["♣", "♦", "♥", "♠"]:
             for value in range(2, 15):
                 if value == 11:
@@ -31,11 +35,13 @@ class Deck:
                 self.cards.append(Card(value, suit))
 
     def shuffle_deck(self):
+        #Shuffles the deck of cards in a random format.
         for _ in range(0, len(self.cards)):
             random_card = random.randint(0, len(self.cards) - 1)
             self.cards[_], self.cards[random_card] = self.cards[random_card], self.cards[_]
 
     def return_deck(self):
+        #Returns the deck of card objects in a list in straight and/or shuffle format.
         return_deck = []
         for _ in self.cards:
             return_deck.append(_.return_card())
@@ -43,13 +49,16 @@ class Deck:
 
 
 class Player:
+    #Class to manually add players to the poker game and draw and returns the players's hand cards.
     def __init__(self):
         self.hand = []
 
     def draw_hand(self, _):
+        #Draw cards from the deck for the player.
         self.hand.append(_.pop())
 
     def return_hand(self):
+        #Returns the player's hand cards.
         return_hand = []
         for _ in self.hand:
             return_hand.append(_)
@@ -57,8 +66,9 @@ class Player:
 
 
 class Poker:
-
+    #Class defining poker rules.
     def high_card(self, _):
+        #To check the highest card in the set, Takes the player cards as input(Just the players cards and excluding the community cards.) and returs the highest card in the set.
         rank = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
         value = []
         card_rank = []
@@ -79,6 +89,7 @@ class Poker:
             return card_rank[0][1]
 
     def flush(self, _):
+        #To check for a FLUSH(cards belonging to same deck.), Takes the player + community cards as inputs and checks for FLUSH, Returns the card suit if suit matches, Else return NONE.
         suit = []
         for item in _:
             suit.append(item.split("_")[1])
@@ -118,6 +129,7 @@ class Poker:
             return None
 
     def pair(self, _):
+        #To check for a pair, Takes the player + community cards as input and returns the value of the pair if there is a match, Else returns NONE.
         value = []
         for item in _:
             value.append(item.split("_")[0])
@@ -138,6 +150,7 @@ class Poker:
             return None
 
     def two_pair(self, _):
+        #To check for a two sets of pair, Takes the player + community cards as input and returns the value of the two sets of pair if there is a match, Else returns NONE.
         value = []
         for item in _:
             value.append(item.split("_")[0])
@@ -157,7 +170,8 @@ class Poker:
         else:
             return None
 
-    def triplet(self, _):
+    def three_of_a_kind(self, _):
+        #To check for a triplet, Takes the player + community cards as input and returns the value of the triplet if there is a match, Else returns NONE.
         value = []
         for item in _:
             value.append(item.split("_")[0])
@@ -174,6 +188,7 @@ class Poker:
             return None
 
     def four_of_a_kind(self, _):
+        #To check for four of the same card values, Takes the player + community cards as input and returns the value of the four cards if there is a match, Else returns NONE.
         value = []
         for item in _:
             value.append(item.split("_")[0])
@@ -190,6 +205,7 @@ class Poker:
             return None
 
     def full_house(self, _):
+        #To check for a FullHouse(Pair + Triplet), Takes the player + community cards as input and returns the value of the pair and triplet if there is a match, Else returns NONE.
         value = []
         for item in _:
             value.append(item.split("_")[0])
@@ -220,6 +236,7 @@ class Poker:
             return None, None
 
     def straight(self, _):
+        #To check for a straight set of values, Takes the player + community cards as input and returns the straight values if there is a match, Else returns NONE.
         value = []
         for item in _:
             value.append(item.split("_")[0])
@@ -245,6 +262,8 @@ class Poker:
             return None
 
     def straight_flush(self, _):
+         #To check for a straight set of values, Takes the player + community cards as input and returns the straight values if there is a match, Else returns NONE.
+         #To check for a FLUSH(cards belonging to same deck.), Takes the player + community cards as inputs and checks for FLUSH, Returns the card suit if suit matches, Else return NONE.
         suit = []
         for item in _:
             suit.append(item.split("_")[1])
@@ -303,6 +322,8 @@ class Poker:
             return None, None
 
     def royal_flush(self, _):
+        #To check for a FLUSH(cards belonging to same deck.), Takes the player + community cards as inputs and checks for FLUSH, Returns the card suit if suit matches, Else return NONE.
+        #To check if the value of the cards are according to the rank ["10", "J", "Q", "K", "A"]
         suit = []
         for item in _:
             suit.append(item.split("_")[1])
@@ -351,6 +372,7 @@ class Poker:
 
 
 def test():
+    #To test the above classes and functions, just for testing purpose.
     card = Card(10, "♠")
     my_card = card.return_card()
     print(my_card)
@@ -413,6 +435,7 @@ def test():
 
 
 def hello_world_bot():
+    #A sample of the game, Two primitive bots playing a game of poker and a winner is decided at the end of 10 rounds.
     time.sleep(1)
     ranking = ["Royal Flush", "Straight Flush", "Four of a Kind", "Full House", "Flush", "Straight",
                "Three of a Kind", "Two Pairs", "Pair", "High Card"]
