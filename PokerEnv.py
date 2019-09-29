@@ -5,13 +5,32 @@ Created on Tue Sep 24 21:37:28 2019
 @author: battu
 """
 
+
+# The code for implementing the Cards, decks and flushes.
 from PokerGame import *
 
+
+
+#List of actions available to players each round
 action_dictionary = {'pre_flop':['CALL','RAISE','FOLD'],'flop':['CHECK','BET','RAISE','FOLD'],'turn':['CHECK','BET','RAISE','FOLD'],'river':['CHECK','BET','RAISE','FOLD']}
+
+
 #Gym Environment for Poker
 class PokerEnvironment(object):
+    '''
+    A list of 'agents' is given to the environment as the game begins.
+    A deck is built and randomly shuffled.
+    Rest are initialization variables
+    
+    self.stage tells which round the game is currently in
+    self.minimum_bet_amount is the minimum amount of bet a player has to place if he wants to bet.
+    self.bets_placed is the array of bets placed by the player.
+    self.folden_indexs tells which players have folded.
+    self.pot is the total amount of bets placed by all players till the current round.
+    self.community_cards is the community cards visible to agents till the current round.
     
     
+    '''
     def __init__(self,players_list):
         self.n_players = len(players_list)
         self.player_objects = players_list
@@ -34,14 +53,6 @@ class PokerEnvironment(object):
         self.folden_indexes = []
         self.pot = 0
         self.community_cards = []
-        
-        
-        
-        
-        
-        
-        
-        
         pass
     
     def reset(self):
@@ -54,18 +65,27 @@ class PokerEnvironment(object):
             
         pass
     
+    
+    #Not implemented, can be inherited and implemented later on(This mimics a gym environment)
     def step(self,action):
         pass
+    
+    
     
     def render(self):
         pass
         # We show the flask or html game here, when it is implemented
         #Send all information as json to frontend code, where it is rendered.
+      
         
+        
+    #Tell each agent object the current stage of the game, this is a simple message function
     def set_stage(self):
         for i in range(self.n_players):
             self.player_objects[i].set_stage(self.stage)
             
+    
+    #Remove folden players form list
     def del_folden_index(self,a,b,index):
             del a[index]
             try:
@@ -73,6 +93,8 @@ class PokerEnvironment(object):
             except Exception as e:
                 pass
             return a,b
+        
+    # This function interacts with agent for each round depending on the decision they make. 
     def get_player_actions(self):
         
         action_list = action_dictionary[self.stage]
@@ -183,6 +205,9 @@ class PokerEnvironment(object):
                     
         self.n_players -= len(self.folden_indexes)
         
+        
+        
+        #Remove folded players from the game here.
             
         for j in range(len(self.folden_indexes)):
             self.player_objects,self.bets_placed = self.del_folden_index(self.player_objects,self.bets_placed,self.folden_indexes[j])
@@ -205,7 +230,7 @@ class PokerEnvironment(object):
                         
                     
         
-        
+    # High level implementation of pre flop round. 
     def pre_flop(self):
         
         self.stage = 'pre_flop'
@@ -222,6 +247,7 @@ class PokerEnvironment(object):
         
         
         pass
+    #High level implementation of Flop round.
     def flop(self):
         self.dealer = Player()
         self.dealer.draw_hand(self.main_deck)
@@ -240,6 +266,8 @@ class PokerEnvironment(object):
         self.minimum_bet_amount = 10
         print('Flop Done')
         pass
+    
+    #High level implementation of Turn round
     def turn(self):
         self.dealer.draw_hand(self.main_deck)
         self.community_cards = self.dealer.hand
@@ -254,6 +282,9 @@ class PokerEnvironment(object):
         self.minimum_bet_amount = 10
         print('Turn Done')
         pass
+    
+    
+    #High level implementation of River round.
     def river(self):
         self.dealer.draw_hand(self.main_deck)
         self.community_cards = self.dealer.hand
@@ -268,6 +299,8 @@ class PokerEnvironment(object):
         self.minimum_bet_amount = 10
         pass
     
+    
+    #The showdown where player hands are displayed.
     def show(self):
         for i in range(self.n_players):
             print(self.player_objects[i].hand)
@@ -282,21 +315,26 @@ class PokerEnvironment(object):
 
         
 class Agent(object):
-    
+    #Each agent takes in the player object from PokerGame package and the amount of coins he has in the beginning.
     def __init__(self,player_object,coins):
         self.current_coins = coins
         self.player = player_object
         self.hand = None
         self.stage = None
+        
+        #Not implemented yet.
         self.P_rp=0
         
-        
+        #The actions for each player
         self.available_actions = None
-        
+    
+    #Sets the stage and available actions of the agent. Received from the environment.
     def set_stage(self,stage):
         self.stage = stage
         self.available_actions = action_dictionary[self.stage]
-        
+    
+
+    #This is where the agent makes decisions based on the parameters given to it from the environment. Right now random decisions are made.    
     def make_decision(self, bets_placed,player_id,community_cards,minimum_bet_amount):
         print("Bets Placed")
         print(bets_placed,self.current_coins)
@@ -309,12 +347,13 @@ class Agent(object):
         pass
     
     
+    #Not implemented yet, extra information needed for decision making for agents.
     def calculate_probability_of_hand(self,hand):
         self.P_rp = self.P_RoyalFlush(hand)
         
         pass
     
-    
+    #Calculate the probability of a royal flush, more flushes to be implemented.
     def P_RoyalFlush(self,hand):
         
         ranks,suits = [x.split("_")[0] for x in a.hand],[x.split("_")[1] for x in a.hand]
@@ -326,6 +365,7 @@ class Agent(object):
             else:
                 # This is the standard probability of a royal flush
                 return 0.000154
+    
     def P_StraightFlush(self,hand):
         ranks,suits = [x.split("_")[0] for x in a.hand],[x.split("_")[1] for x in a.hand]
         
@@ -337,7 +377,8 @@ class Agent(object):
 
         
         
-### Testing Area      
+### Testing Area     
+#8 Players are created, each are given 1000 coins and a standard poker game is run.
 players_list = []
 for i in range(8):
     p = Player()
@@ -355,28 +396,5 @@ env.show()
 
 
 
-'''
-while True:
-    deck = Deck()
-    deck.build_deck()
-    deck.shuffle_deck()
-    deck.shuffle_deck()
-    deck.shuffle_deck()
-    deck.shuffle_deck()
-    deck.shuffle_deck()
-    shuffle_deck = deck.return_deck()  
-    player1 = Player()
-    a = Agent(player1)
-    a.player.draw_hand(shuffle_deck)
-    a.player.draw_hand(shuffle_deck)
-    a.hand = a.player.return_hand()
-    if a.P_rp!=0.0:
-        break
-    print(1,)
-    
- '''   
-
-    
-    
 
 
