@@ -1,8 +1,8 @@
 #### Instructions to run the program:
 
 
-PokerEnv is the new updated code, it is a simulation of the poker environment with 'n' number of agents, currently if you open the PokerEnv.py file, you can see the test area at the end. If you run the program(You need PokerGame.py in the same folder, it is a dependency) 8 agents are created in a simulated poker environment as they play the game randomly through all its rounds. Intelligence in the agent is yet to be implemented.
-The details of the poker environment are given below.
+PokerEnv is the new updated code, it is a simulation of the poker environment with 'n' number of agents each with their own emotions and power, currently if you open the PokerEnv.py file, you can see the test area at the end. If you run the program(You need PokerGame.py in the same folder, it is a dependency) 8 agents are created in a simulated poker environment and they display different emotions and their power.
+The Graphical Interface and Decision maker are yet to be implemented.
 
 
 
