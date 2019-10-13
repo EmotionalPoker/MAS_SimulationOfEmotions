@@ -360,13 +360,13 @@ class Poker:
             if item in rank:
                 count += 1
         if count == 5 and cflush:
-            return value, suit
+            return count
         elif count == 5 and dflush:
-            return value, suit
+            return count
         elif count == 5 and hflush:
-            return value, suit
+            return count
         elif count == 5 and sflush:
-            return value, suit
+            return count
         else:
             return None, None
 
