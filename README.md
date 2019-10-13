@@ -12,78 +12,72 @@ The details of the poker environment are given below.
 
 ## What's new:
 
-### Poker Environment
+#### Beta Version
+
+Emotions Model
+
+An Agent is a player in the environment, each agent has a hand of 2 cards, each agent starts with coins to place bets and each agent is given an emotion.
+
+**The Emotions**
+We use four of the six basic emotions of humans, they are:
+
+Fear, Happiness, Anger, Contempt
+
+We also add two other states of emotions called: no-emotion and normal.
 
 
-The poker game we are building is a traditional texas hold em poker with slightly modified rules. A traditional 52 card deck is used, each player gets 2 cards in his hand and there will be a total of 5 community cards by the end of the game. 
-
-Note: The terms agents and players mean the same, they will used based on the context.
-
-Here is the sequence of events:
-
-1. Hand cards are dealt to each player.
-2. Pre-Flop round
-3. Flop round
-4. Turn round
-5. River round
-6. Showdown
-
-The player with the best hand+community cards(any 3 of 5 possible) is considered the winner. Each round consists of betting which is added to the 'pot'. The winner gets all the money from the pot. Here is a list of valid hands [citation, wikipedia article of hands].
-
-#### Rounds in Poker
-
-The class PokerEnvironment has methods to control and simulate the rounds of poker and establish and control agents in the environment. It also has methods to render the environment. 
+An agent with the state no-emotion is purely statistical and always makes the statistically optimal move.
 
 
-##### 1. Dealing
+An agent with the state normal is a random agent, this agent takes random actions.
 
-Each player gets 2 cards from the top of a shuffled deck of 52 cards. Each player is controlled by the 'Agent' class which has methods for making decisions and processing information available. Each agent object is seperate from one another and each agent gets some coins in the beginning of the game(Default:1000).
 
-##### 2. Pre-Flop Round
+Each emotion also has power that determines how strong the emotion is affecting the agent. Its value lies between 0-1.
 
-This is the first betting round before the community cards are shown. Starting from the first player that has entered the game(first in the list), each player has 3 actions available to him, they are: CALL, RAISE, FOLD.
+Here is an example agent with emotions and its power.
 
-**CALL**: The player has to match the bet of the previous player , if it is the first player, he has to match the minimum bet(Default:10).
+*Player ID: 0 , Emotion: happy , Emotion Power: 0.4835810757205069*
 
-**RAISE**: The player can bet a higher amount than the previous player, it can be from double the amount to all-in.
-By the end of the round, if all the players dont have the same amount of bets placed, the round is re-run again to make sure they match the highest bet(tracked by minimum_bet variable) or fold.
-
-**FOLD**: A player quits the game, the agent is removed from the environment and any bets he placed will be removed too. The coins it has placed are not given back even if the player folds.
-
-##### 3. Flop Round
-
-3 Community cards are drawn from the deck and placed in front of the agents, the agents use these community cards to make further decisions. Each player has 4 actions available to him: CHECK, BET, RAISE, FOLD.
-
-**CHECK**: Do nothing, the player does not bet and just stays idle. But if some other player has bet, then CHECK is not possible as this player is forced to match their bet.
-
-**BET**: This is similar to CALL from Pre-Flop round. The player bets the minimum_bet or matches the previous player's bet.
-
-**RAISE**: This is the same RAISE as the previous round, the player can bet more than the previous player upto all-in(maximum amount it has).
-
-**FOLD**: The player folds, he quits the game and is removed from the environment. No coins are given back.
-
-The round is re-run again if the player bets are not equal until all player put in the equal amount or fold.
-
-##### 4. Turn Round
-
-1 more community card is drawn from the deck and placed in front of the agents, there are a total of 4 community cards now. Each player has 4 actions available to him: CHECK, BET, RAISE, FOLD.
-
-The actions provided are the same as the ones in the previous round(Flop Round). 
-
-##### 5. River Round
-
-1 more community card is drawn, making it a total of 5 community cards in front of the agents. Each player has 4 actions available: CHECK, BET, RAISE, FOLD.
-
-The actions provided are the same as the ones in the Flop Round.
-
-##### 6. Showdown
-
-Each player's hand is displayed, then they are all classified into flushes based on the legal hands[Wikipedia citation for hands].
-The winning player is declared.
-The game is done when all rounds are done even if players have coins remaining. This is to ensure simplicity.
+**Player Attributes**
+Each agent has a set of attributes that influences the decisions they take. The attributes we have defined are as follows,
 
 
 
+Caution
+Greed
+Bluff
+
+
+Each attributes values lie between 0-100, with 50 being normal.
+
+Caution influences the player to make less risky moves. Even if the probability of winning is high, the agent may take a less risky move. The higher the value, the lesser the probability of taking a risky move(like raising a bet).
+
+Greed influences the player to make risky moves despite being unsure of the probability of winning, this may actually result in a win if the agent gets lucky or it may result in severe losses.
+
+Bluff is a special attribute, it influences the player to make riskier moves even when the winning probability is low to influence other agents to Fold.
+
+Default attributes are Caution:50, Greed:50, Bluff:50. (Normal Emotion). Emotions affect the starting attributes of each agent. For example:
+
+
+IF emotion = Fear:
+caution = caution + Power*(50)
+AND 
+greed = greed - Power*(50/2)
+
+As the game progresses, these attributes undergo very small changes based on the status of the game. But these changes are minor compared to the initialization done by the emotions.
+
+Note: This is the beta version, more attributes and emotions maybe added in the future.
+
+**The Decision Making**
+Each agent has a few details at its disposal when making a decision each round, it knows the bets placed on the table, what is its hand and the community cards on the table. 
+
+Based on the hand and the community cards , each agent generates a score of its hand, the higher the score, the higher the chance of victory. This score is generated by the following formula:
+
+*View the formula in the report*
+
+
+where x_i is the probability of the ith flush happening with the hand + community cards (There are a total of 10 flushes/valid endgame hands in poker).
+Each action is given a probability of occuring based on these values and the attributes. Then the agent takes action based on these probabilities.(In progress)
 
 
 
