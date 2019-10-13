@@ -10,11 +10,14 @@ Created on Tue Sep 24 21:37:28 2019
 from PokerGame import *
 
 
+# Defined Player Attributes that help in decision making
+#Each score ranges from 0-100
+default_attributes = {'caution':50,'greed':50,'bluff':50}
 
 #List of actions available to players each round
 action_dictionary = {'pre_flop':['CALL','RAISE','FOLD'],'flop':['CHECK','BET','RAISE','FOLD'],'turn':['CHECK','BET','RAISE','FOLD'],'river':['CHECK','BET','RAISE','FOLD']}
 
-
+emotion_dictionary = {0:'fear',1:'happy',2:'no-emotion',3:'anger',4:'contempt',5:'normal'}
 #Gym Environment for Poker
 class PokerEnvironment(object):
     '''
@@ -40,6 +43,7 @@ class PokerEnvironment(object):
         
         self.deck_object = Deck()
         self.deck_object.build_deck()
+        self.player_emotions = []
         
         for i in range(random.randint(1,5)):
             self.deck_object.shuffle_deck()
@@ -316,7 +320,7 @@ class PokerEnvironment(object):
         
 class Agent(object):
     #Each agent takes in the player object from PokerGame package and the amount of coins he has in the beginning.
-    def __init__(self,player_object,coins):
+    def __init__(self,player_object,coins,emotion,power):
         self.current_coins = coins
         self.player = player_object
         self.hand = None
@@ -327,51 +331,85 @@ class Agent(object):
         
         #The actions for each player
         self.available_actions = None
-    
+        self.emotion_power = power
+        
+        self.emotion = emotion
+        self.player_attributes = default_attributes.copy()
+        self.set_attributes()
     #Sets the stage and available actions of the agent. Received from the environment.
     def set_stage(self,stage):
         self.stage = stage
         self.available_actions = action_dictionary[self.stage]
     
-
+    #Here the attributes of each player are set based on their state of emotion.
+    def set_attributes(self):
+        base_value = 50
+        if emotion_dictionary[self.emotion] == 'fear':
+                    self.player_attributes['caution'] += self.emotion_power*base_value
+                    self.player_attributes['greed'] -= self.emotion_power*(base_value/2)            
+        if emotion_dictionary[self.emotion] == 'happy':
+                    self.player_attributes['bluff'] += self.emotion_power*base_value
+                    self.player_attributes['greed'] += self.emotion_power*(base_value/2)
+                    self.player_attributes['caution'] -= self.emotion_power*(base_value/2)
+        if emotion_dictionary[self.emotion] == 'no_emotion':
+                    self.player_attributes['caution'] = 0
+                    self.player_attributes['greed'] = 0
+                    self.player_attributes['bluff'] = 0
+        if emotion_dictionary[self.emotion] == 'anger':
+                    self.player_attributes['greed'] += self.emotion_power*base_value
+                    self.player_attributes['bluff'] += self.emotion_power*(base_value/2)
+                    self.player_attributes['caution'] -= self.emotion_power*base_value
+        if emotion_dictionary[self.emotion] == 'contempt':
+                    self.player_attributes['greed'] -= self.emotion_power*base_value
+                    self.player_attributes['caution'] += self.emotion_power*(base_value/2)
+        
+        
+        
+        
     #This is where the agent makes decisions based on the parameters given to it from the environment. Right now random decisions are made.    
     def make_decision(self, bets_placed,player_id,community_cards,minimum_bet_amount):
-        print("Bets Placed")
-        print(bets_placed,self.current_coins)
-        print("Player ID:",player_id, "Controls:",self.available_actions)
+        print("All the bets placed:")
+        print(bets_placed)
+        
+        print("Player ",player_id," Turn")
+        print("Controls Available:",self.available_actions)
         print("Community Cards:",community_cards)
-        #a = input("Input for player:")
-        #print(self.available_actions)
+        
+        
+        #Each agent makes a random decision.
         a = random.randint(0,len(self.available_actions)-1)
         return int(a),minimum_bet_amount*2
         pass
     
     
     #Not implemented yet, extra information needed for decision making for agents.
-    def calculate_probability_of_hand(self,hand):
-        self.P_rp = self.P_RoyalFlush(hand)
+    #Returns the score of hand+community card to aid in decision making
+    
+    def calculate_score_of_hand(self,hand,community=None):
+        if community==None:
+            community=[]
+        #For now hand scores are random.
+        self.rp = 1 * random.randint(0,5)
+        self.sf = 0.9 * random.randint(0,5)
+        self.fo = 0.8 * random.randint(0,5)
+        self.fh = 0.7 * random.randint(0,5)
+        self.f = 0.6 * random.randint(0,5)
+        self.s = 0.5 * random.randint(0,5)
+        self.tk = 0.4 * random.randint(0,5)
+        self.tp = 0.3 *random.randint(0,5)
+        self.op = 0.2 * random.randint(0,5)
+        self.hc = 0.1 * random.randint(0,5)
+        
+        return self.rp+self.sf+self.fo+self.fh+self.f+self.s+self.tk+self.tp+self.op+self.hc
         
         pass
     
-    #Calculate the probability of a royal flush, more flushes to be implemented.
-    def P_RoyalFlush(self,hand):
+            
         
-        ranks,suits = [x.split("_")[0] for x in a.hand],[x.split("_")[1] for x in a.hand]
-        if suits[0]!=suits[1]:
-            return 0.0
-        else:
-            if ranks[0] not in ["10", "J", "Q", "K", "A"] or ranks[1] not in ["10", "J", "Q", "K", "A"]:
-                return 0.0
-            else:
-                # This is the standard probability of a royal flush
-                return 0.000154
     
-    def P_StraightFlush(self,hand):
-        ranks,suits = [x.split("_")[0] for x in a.hand],[x.split("_")[1] for x in a.hand]
-        
-        pass
     
-    #More functions to be written for probability calculation
+    
+    
     
     
 
@@ -379,21 +417,32 @@ class Agent(object):
         
 ### Testing Area     
 #8 Players are created, each are given 1000 coins and a standard poker game is run.
+print("Welcome to Emotional Poker!")
+
 players_list = []
 for i in range(8):
     p = Player()
-    a = Agent(p,1000)
+    emotion = random.randint(0,5)
+    power = random.random()
+    a = Agent(p,1000,emotion,power)
     players_list.append(a)
-    
+
+count=0
+print("Here is a list of Players, along with their emotions and the power of their emotions")
+for i in players_list:
+    print("Player ID:",count,", Emotion:",emotion_dictionary[i.emotion],", Emotion Power:",i.emotion_power)
+    count+=1
 env = PokerEnvironment(players_list)
 env.reset()
+
 env.show()
+'''
 env.pre_flop()
 env.flop()
 env.turn()
 env.river()
 env.show()
-
+'''
 
 
 
