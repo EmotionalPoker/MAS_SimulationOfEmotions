@@ -1,27 +1,42 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 20 21:37:28 2019
+
+@author: Hari Vidharth
+"""
+
 import random
 import itertools
 import time
 
 
 class Card:
-    #Card class to create and return a card object.
+    """
+    Card class to create and return a card object.
+    """
     def __init__(self, value, suit):
         self.value = value
         self.suit = suit
 
     def return_card(self):
-        #Returns card object in the format CardRank_CardSuit.
+        """
+        Returns card object in the format CardRank_CardSuit.
+        """
         return "{}_{}".format(self.value, self.suit)
 
 
 class Deck:
-    #Deck class builds the deck of cards consisting of card objects in straight and/or shuffle format. 
+    """
+    Deck class builds the deck of cards consisting of card objects in straight
+    and/or shuffle format.
+    """
     def __init__(self):
         self.cards = []
 
     def build_deck(self):
-        #Builds the deck of cards in straight format.
+        """
+        Builds the deck of cards in straight format.
+        """
         for suit in ["♣", "♦", "♥", "♠"]:
             for value in range(2, 15):
                 if value == 11:
@@ -35,13 +50,19 @@ class Deck:
                 self.cards.append(Card(value, suit))
 
     def shuffle_deck(self):
-        #Shuffles the deck of cards in a random format.
+        """
+        Shuffles the deck of cards in a random format.
+        """
         for _ in range(0, len(self.cards)):
             random_card = random.randint(0, len(self.cards) - 1)
-            self.cards[_], self.cards[random_card] = self.cards[random_card], self.cards[_]
+            (self.cards[_], self.cards[random_card]) = (
+                                        self.cards[random_card], self.cards[_])
 
     def return_deck(self):
-        #Returns the deck of card objects in a list in straight and/or shuffle format.
+        """
+        Returns the deck of card objects in a list in straight and/or shuffle
+        format.
+        """
         return_deck = []
         for _ in self.cards:
             return_deck.append(_.return_card())
@@ -49,16 +70,23 @@ class Deck:
 
 
 class Player:
-    #Class to manually add players to the poker game and draw and returns the players's hand cards.
+    """
+    Class to manually add players to the poker game and draw and returns the
+    players's hand cards.
+    """
     def __init__(self):
         self.hand = []
 
     def draw_hand(self, _):
-        #Draw cards from the deck for the player.
+        """
+        Draw cards from the deck for the player.
+        """
         self.hand.append(_.pop())
 
     def return_hand(self):
-        #Returns the player's hand cards.
+        """
+        Returns the player's hand cards.
+        """
         return_hand = []
         for _ in self.hand:
             return_hand.append(_)
@@ -66,313 +94,640 @@ class Player:
 
 
 class Poker:
-    #Class defining poker rules.
-    def high_card(self, _):
-        #To check the highest card in the set, Takes the player cards as input(Just the players cards and excluding the community cards.) and returs the highest card in the set.
-        rank = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+    """
+    Class defining poker rules, takes the player cards and the community cards
+    as input for the class to be used by the individual check functions!
+    """
+    def __init__(self, communitycards, *player_cards):
+        self.playercards = []
+        self.communitycards = communitycards
+        for item in player_cards:
+            self.playercards.append(item)
+        # print(self.playercards)
+        # print(self.communitycards)
+
+    def royal_flush(self):
+        """
+        To check for a flush in the set, Takes the player cards and community
+        cards as input, and checks for a flush among the players, and returns
+        the players whose cards matches. Does not return any cards if
+        multiple flush cards or no flush cards are detected.
+        Also checks for the value of the cards are according to the rank
+        ["10", "J", "Q", "K", "A"] returns the player whose cards matches,
+        combing it with the above flush result to check for a ROYAL FLUSH,
+        returns the player if winner else returns None and moves to the next
+        check function!
+        """
+        suit = []
+        playercommunitycards = []
+        player = []
+        flushcount = []
+        playercount = []
+        flushplayercount = []
+        for item in self.playercards:
+            playercommunitycards.append(item+self.communitycards)
+        # print(playercommunitycards)
+        for items in playercommunitycards:
+            for item in items:
+                player.append(item.split("_")[1])
+            suit.append(player)
+            player = []
+        # print(suit)
+        cardclass = ["♣", "♦", "♥", "♠"]
+        for items in cardclass:
+            for item in suit:
+                flushcount.append(item.count(items))
+            # print(flushcount)
+            for position, item in enumerate(flushcount):
+                if item >= 5:
+                    playercount.append(position)
+            # print(playercount)
+            flushplayercount.append(playercount)
+            playercount = []
+            flushcount = []
+        # print(flushplayercount)
+        rank = ["10", "J", "Q", "K", "A"]
+        count = 0
+        value = []
+        for items in playercommunitycards:
+            for item in items:
+                player.append(item.split("_")[0])
+            value.append(player)
+            player = []
+        # print(value)
+        royal = []
+        for pos, items in enumerate(value):
+            for ranking in rank:
+                if ranking in items:
+                    count += 1
+            royal.append((pos, count))
+            count = 0
+        # print(royal)
+        new_royal = []
+        for items in royal:
+            if items[1] == 5:
+                new_royal.append(items[0])
+        # print(new_royal)
+        for item in new_royal:
+            for items in flushplayercount:
+                if item in items:
+                    return item
+                else:
+                    return None
+
+    def straight_flush(self):
+        """
+         To check for a flush in the set, Takes the player cards and community
+         cards as input, and checks for a flush among the players, and returns
+         the players whose cards matches. Does not return any cards if
+         multiple flush cards or no flush cards are detected.
+         Also checks for the value of the cards are according to the straight
+         rank returns the player whose cards matches, combing it with the above
+         flush result to check for a STRAIGHT FLUSH, returns the player if
+         winner else returns None and moves to the next check function!
+         """
+        suit = []
+        playercommunitycards = []
+        player = []
+        flushcount = []
+        playercount = []
+        flushplayercount = []
+        for item in self.playercards:
+            playercommunitycards.append(item+self.communitycards)
+        # print(playercommunitycards)
+        for items in playercommunitycards:
+            for item in items:
+                player.append(item.split("_")[1])
+            suit.append(player)
+            player = []
+        # print(suit)
+        cardclass = ["♣", "♦", "♥", "♠"]
+        for items in cardclass:
+            for item in suit:
+                flushcount.append(item.count(items))
+            # print(flushcount)
+            for position, item in enumerate(flushcount):
+                if item >= 5:
+                    playercount.append(position)
+            # print(playercount)
+            flushplayercount.append(playercount)
+            playercount = []
+            flushcount = []
+        # print(flushplayercount)
+        value = []
+        for items in playercommunitycards:
+            for item in items:
+                player.append(item.split("_")[0])
+            value.append(player)
+            player = []
+        # print(value)
+        rank = ["2", "3", "4", "5", "6", "7", "8", "9",
+                "10", "J", "Q", "K", "A"]
+        card_position = []
+        playerp = []
+        for items in value:
+            for position, item in enumerate(rank):
+                if item in items:
+                    playerp.append(position)
+            card_position.append(playerp)
+            playerp = []
+        # print(card_position)
+        groups = []
+        group = []
+        for items in card_position:
+            value1 = value2 = items[0]
+            for item in items[1:]:
+                if item == value2 + 1:
+                    value2 = item
+                else:
+                    groups.append(value1 if value1 == value2 else
+                                  (value1, value2))
+                    value1 = value2 = item
+            groups.append(value1 if value1 == value2 else (value1, value2))
+            group.append(groups)
+            groups = []
+        # print(group)
+        new_group = []
+        player = []
+        for items in group:
+            for item in items:
+                if type(item) is tuple:
+                    player.append(item)
+            new_group.append(player)
+            player = []
+        # print(new_group)
+        straightplayer = []
+        for pos, items in enumerate(new_group):
+            if items[0][-1] - items[0][0] == 4:
+                straightplayer.append(pos)
+        # print(straightplayer)
+        for item in straightplayer:
+            for items in flushplayercount:
+                if item in items:
+                    return item
+                else:
+                    return None
+
+    def four_of_a_kind(self):
+        """
+         To check for a four of a kind in the set, Takes the player cards and
+         community cards as input, and checks for a four of a kind among the
+         players, and returns the players whose cards matches. Does not return
+         any cards if multiple or no four of a kinds are detected. Returns the
+         player if winner else returns None and moves to the next check
+         function!
+         """
+        value = []
+        player = []
+        playercommunitycards = []
+        player = []
+        for item in self.playercards:
+            playercommunitycards.append(item+self.communitycards)
+        # print(playercommunitycards)
+        for items in playercommunitycards:
+            for item in items:
+                player.append(item.split("_")[0])
+            value.append(player)
+            player = []
+        # print(value)
+        new_value = []
+        player = []
+        for items in value:
+            for value1, value2, value3, value4 in itertools.combinations(
+                                                                    items, 4):
+                player.append((value1, value2, value3, value4))
+            new_value.append(player)
+            player = []
+        four_of_a_kind = []
+        player = []
+        for items in new_value:
+            for item in items:
+                if (item[0] == item[1] and item[1] == item[2] and item[2] ==
+                        item[3]):
+                    player.append((item[0], item[1], item[2], item[3]))
+            four_of_a_kind.append(player)
+            player = []
+        # print(four_of_a_kind)
+        new_four_of_a_kind = []
+        for pos, items in enumerate(four_of_a_kind):
+            if len(items) >= 1:
+                new_four_of_a_kind.append(pos)
+        # print(new_four_of_a_kind)
+        if len(new_four_of_a_kind) == 1:
+            return new_four_of_a_kind[0]
+        else:
+            return None
+
+    def full_house(self):
+        """
+        To check for a three of a kind in the set, Takes the player cards and
+        community cards as input, and checks for a three of a kind among the
+        players, and returns the players whose cards matches. Does not return
+        any cards if multiple or no three of a kinds are detected. Returns the
+        player if winner else returns None and moves to the next check
+        function!
+        To check for a highest pair in the set, Takes the player cards and
+        community cards as input, and checks for the two pairs among the
+        players and returns the players value. Does not return any cards if
+        multiple or no two pair cards are detected, it is then directed to the
+        next check function!
+        """
+        value = []
+        player = []
+        playercommunitycards = []
+        player = []
+        for item in self.playercards:
+            playercommunitycards.append(item+self.communitycards)
+        # print(playercommunitycards)
+        for items in playercommunitycards:
+            for item in items:
+                player.append(item.split("_")[0])
+            value.append(player)
+            player = []
+        # print(value)
+        new_value = []
+        player = []
+        for items in value:
+            for value1, value2, value3 in itertools.combinations(items, 3):
+                player.append((value1, value2, value3))
+            new_value.append(player)
+            player = []
+        three_of_a_kind = []
+        player = []
+        for items in new_value:
+            for item in items:
+                if item[0] == item[1] and item[1] == item[2]:
+                    player.append((item[0], item[1], item[2]))
+            three_of_a_kind.append(player)
+            player = []
+        # print(three_of_a_kind)
+        new_three_of_a_kind = []
+        for pos, items in enumerate(three_of_a_kind):
+            if len(items) >= 1:
+                new_three_of_a_kind.append(pos)
+        # print(new_three_of_a_kind)
+        rank = ["2", "3", "4", "5", "6", "7", "8", "9",
+                "10", "J", "Q", "K", "A"]
+        playervalue = []
+        communityvalue = []
+        player = []
+        for items in self.playercards:
+            for item in items:
+                player.append(item.split("_")[0])
+            playervalue.append(player)
+            player = []
+        for item in self.communitycards:
+            communityvalue.append(item.split("_")[0])
+        # print(playervalue)
+        # print(communityvalue)
+        new_value = []
+        player = []
+        for pos, items in enumerate(playervalue):
+            if items[0] == items[1]:
+                player.append([pos, items[0]])
+            for item in items:
+                if item in communityvalue:
+                    player.append([pos, item])
+            new_value.append(player)
+            player = []
+        # print(new_value)
+        pair_rank = []
+        player = []
+        for items in new_value:
+            for item in items:
+                for pos, ranking in enumerate(rank):
+                    if ranking == item[1]:
+                        player.append([pos, item])
+                pair_rank.append(player)
+                player = []
+        pair_rank = sorted(pair_rank)
+        # print(pair_rank)
+        count = 0
+        playercount = []
+        player = []
+        for items in pair_rank:
+            for item in new_three_of_a_kind:
+                if item == items[0][1][0]:
+                    count += 1
+            player.append(count)
+            playercount.append(player)
+            player = []
+            count = 0
+        # print(playercount)
+        if len(playercount) == 1:
+            for pos, items in enumerate(playercount):
+                return pos
+        else:
+            return None
+
+    def straight(self):
+        """
+         Checks for the value of the cards are according to the straight
+         rank and returns the player whose cards matches, to check for a
+         STRAIGHT, returns the player if winner else returns None and moves
+         to the next check function!
+         """
+        playercommunitycards = []
+        player = []
+        for item in self.playercards:
+            playercommunitycards.append(item+self.communitycards)
+        # print(playercommunitycards)
+        value = []
+        for items in playercommunitycards:
+            for item in items:
+                player.append(item.split("_")[0])
+            value.append(player)
+            player = []
+        # print(value)
+        rank = ["2", "3", "4", "5", "6", "7", "8", "9",
+                "10", "J", "Q", "K", "A"]
+        card_position = []
+        playerp = []
+        for items in value:
+            for position, item in enumerate(rank):
+                if item in items:
+                    playerp.append(position)
+            card_position.append(playerp)
+            playerp = []
+        # print(card_position)
+        groups = []
+        group = []
+        for items in card_position:
+            value1 = value2 = items[0]
+            for item in items[1:]:
+                if item == value2 + 1:
+                    value2 = item
+                else:
+                    groups.append(value1 if value1 == value2 else
+                                  (value1, value2))
+                    value1 = value2 = item
+            groups.append(value1 if value1 == value2 else (value1, value2))
+            group.append(groups)
+            groups = []
+        # print(group)
+        new_group = []
+        player = []
+        for items in group:
+            for item in items:
+                if type(item) is tuple:
+                    player.append(item)
+            new_group.append(player)
+            player = []
+        # print(new_group)
+        straightplayer = []
+        for pos, items in enumerate(new_group):
+            if items[0][-1] - items[0][0] == 4:
+                straightplayer.append(pos)
+        # print(straightplayer)
+        if len(straightplayer) == 1:
+            return straightplayer[0]
+        else:
+            return None
+
+    def flush(self):
+        """
+        To check for a flush in the set, Takes the player cards and community
+        cards as input, and checks for a flush among the players, and returns
+        the players and flush cards value. Does not return any cards if
+        multiple flush cards or no flush cards are detected, and is then
+        directed to the next check function!
+        """
+        suit = []
+        playercommunitycards = []
+        player = []
+        flushcount = []
+        playercount = []
+        flushplayercount = []
+        for item in self.playercards:
+            playercommunitycards.append(item+self.communitycards)
+        # print(playercommunitycards)
+        for items in playercommunitycards:
+            for item in items:
+                player.append(item.split("_")[1])
+            suit.append(player)
+            player = []
+        # print(suit)
+        cardclass = ["♣", "♦", "♥", "♠"]
+        for items in cardclass:
+            for item in suit:
+                flushcount.append(item.count(items))
+            # print(flushcount)
+            for position, item in enumerate(flushcount):
+                if item >= 5:
+                    playercount.append(position)
+            # print(playercount)
+            flushplayercount.append(playercount)
+            playercount = []
+            flushcount = []
+        # print(flushplayercount)
+        finalflush = []
+        for items in flushplayercount:
+            if len(items) == 1:
+                finalflush.append(items)
+        if len(finalflush[0]) == 1:
+            return finalflush[0][0]
+        else:
+            return None
+
+    def three_of_a_kind(self):
+        """
+         To check for a three of a kind in the set, Takes the player cards and
+         community cards as input, and checks for a three of a kind among the
+         players, and returns the players whose cards matches. Does not return
+         any cards if multiple or no three of a kinds are detected. Returns the
+         player if winner else returns None and moves to the next check
+         function!
+         """
+        value = []
+        player = []
+        playercommunitycards = []
+        player = []
+        for item in self.playercards:
+            playercommunitycards.append(item+self.communitycards)
+        # print(playercommunitycards)
+        for items in playercommunitycards:
+            for item in items:
+                player.append(item.split("_")[0])
+            value.append(player)
+            player = []
+        # print(value)
+        new_value = []
+        player = []
+        for items in value:
+            for value1, value2, value3 in itertools.combinations(items, 3):
+                player.append((value1, value2, value3))
+            new_value.append(player)
+            player = []
+        three_of_a_kind = []
+        player = []
+        for items in new_value:
+            for item in items:
+                if item[0] == item[1] and item[1] == item[2]:
+                    player.append((item[0], item[1], item[2]))
+            three_of_a_kind.append(player)
+            player = []
+        # print(three_of_a_kind)
+        new_three_of_a_kind = []
+        for pos, items in enumerate(three_of_a_kind):
+            if len(items) >= 1:
+                new_three_of_a_kind.append(pos)
+        # print(new_three_of_a_kind)
+        if len(new_three_of_a_kind) == 1:
+            return new_three_of_a_kind[0]
+        else:
+            return None
+
+    def two_pair(self):
+        """
+        To check for a two pair in the set, Takes the player cards and
+        community cards as input, and checks for the two pairs among the
+        players and returns the players value. Does not return any cards if
+        multiple or no two pair cards are detected, it is then directed to the
+        next check function!
+        """
+        playervalue = []
+        communityvalue = []
+        player = []
+        for items in self.playercards:
+            for item in items:
+                player.append(item.split("_")[0])
+            playervalue.append(player)
+            player = []
+        for item in self.communitycards:
+            communityvalue.append(item.split("_")[0])
+        # print(playervalue)
+        # print(communityvalue)
+        new_value = []
+        player = []
+        for pos, items in enumerate(playervalue):
+            if items[0] == items[1]:
+                player.append([pos, items[0]])
+            for item in items:
+                if item in communityvalue:
+                    player.append([pos, item])
+            new_value.append(player)
+            player = []
+        # print(new_value)
+        final_value = []
+        for items in new_value:
+            if len(items) == 2:
+                final_value.append(items[0][0])
+        # print(final_value)
+        if len(final_value) == 1:
+            return final_value[0]
+        else:
+            return None
+
+    def pair(self):
+        """
+        To check for a highest pair in the set, Takes the player cards and
+        community cards as input, and checks for the two pairs among the
+        players and returns the players value. Does not return any cards if
+        multiple or no two pair cards are detected, it is then directed to the
+        next check function!
+        """
+        rank = ["2", "3", "4", "5", "6", "7", "8", "9",
+                "10", "J", "Q", "K", "A"]
+        playervalue = []
+        communityvalue = []
+        player = []
+        for items in self.playercards:
+            for item in items:
+                player.append(item.split("_")[0])
+            playervalue.append(player)
+            player = []
+        for item in self.communitycards:
+            communityvalue.append(item.split("_")[0])
+        # print(playervalue)
+        # print(communityvalue)
+        new_value = []
+        player = []
+        for pos, items in enumerate(playervalue):
+            if items[0] == items[1]:
+                player.append([pos, items[0]])
+            for item in items:
+                if item in communityvalue:
+                    player.append([pos, item])
+            new_value.append(player)
+            player = []
+        # print(new_value)
+        pair_rank = []
+        player = []
+        for items in new_value:
+            for item in items:
+                for pos, ranking in enumerate(rank):
+                    if ranking == item[1]:
+                        player.append([pos, item])
+                pair_rank.append(player)
+                player = []
+        pair_rank = sorted(pair_rank)
+        # print(pair_rank)
+        if len(pair_rank) == 1:
+            return pair_rank[0][0][1][0]
+        elif len(pair_rank) > 1:
+            if pair_rank[-2][0][0] != pair_rank[-1][0][0]:
+                return pair_rank[-1][0][1][0]
+            else:
+                return None
+        else:
+            return None
+
+    def high_card(self):
+        """
+        To check the highest card in the set, Takes the player cards as input
+        (Just the players cards and excluding the community cards.), and checks
+        for the high cards among the players, and returns the players and high
+        cards value. Does not return any cards if multiple high cards are
+        detected, it is then directed to the second high card function.
+        """
+        rank = ["2", "3", "4", "5", "6", "7", "8", "9",
+                "10", "J", "Q", "K", "A"]
+        player = []
         value = []
         card_rank = []
-        for item in _:
-            value.append(item.split("_")[0])
-        value1, value2 = value[0], value[1]
-        for position, item in enumerate(rank):
-            if item == value1:
-                card_rank.append((position, value1))
-            elif item == value2:
-                card_rank.append((position, value2))
-        if len(card_rank) > 1:
-            if card_rank[0][0] >= card_rank[1][0]:
-                return card_rank[0][1]
+        final_card_rank = []
+        for items in self.playercards:
+            for item in items:
+                player.append(item.split("_")[0])
+            value.append(player)
+            player = []
+        print(value)
+        for items in value:
+            value1, value2 = items[0], items[1]
+            for position, item in enumerate(rank):
+                if item == value1:
+                    player.append((position, value1))
+                elif item == value2:
+                    player.append((position, value2))
+            if len(player) > 1:
+                if player[0][0] > player[1][0]:
+                    card_rank.append(player[0])
+                elif player[0][0] < player[1][0]:
+                    card_rank.append(player[1])
             else:
-                return card_rank[1][1]
-        else:
-            return card_rank[0][1]
-
-    def flush(self, _):
-        #To check for a FLUSH(cards belonging to same deck.), Takes the player + community cards as inputs and checks for FLUSH, Returns the card suit if suit matches, Else return NONE.
-        suit = []
-        for item in _:
-            suit.append(item.split("_")[1])
-        club = "♣"
-        diamond = "♦"
-        heart = "♥"
-        spade = "♠"
-        cflush = True
-        dflush = True
-        hflush = True
-        sflush = True
-        for item in suit:
-            if club != item:
-                cflush = False
-                break
-        for item in suit:
-            if diamond != item:
-                dflush = False
-                break
-        for item in suit:
-            if heart != item:
-                hflush = False
-                break
-        for item in suit:
-            if spade != item:
-                sflush = False
-                break
-        if cflush:
-            return suit
-        elif dflush:
-            return suit
-        elif hflush:
-            return suit
-        elif sflush:
-            return suit
+                card_rank.append(player[0])
+            player = []
+        print(card_rank)
+        new_card_rank = sorted(card_rank)
+        print(new_card_rank)
+        for position, item in enumerate(card_rank):
+            if new_card_rank[-1] == item:
+                final_card_rank.append((position, item))
+        print(final_card_rank)
+        if len(final_card_rank) == 1:
+            return final_card_rank[0][0]
         else:
             return None
 
-    def pair(self, _):
-        #To check for a pair, Takes the player + community cards as input and returns the value of the pair if there is a match, Else returns NONE.
-        value = []
-        for item in _:
-            value.append(item.split("_")[0])
-        player_cards = [value[0], value[1]]
-        community_cards = [value[2], value[3], value[4]]
-        new_value = []
-        for value1 in player_cards:
-            for value2 in community_cards:
-                new_value.append((value1, value2))
-        new_value.append(player_cards)
-        pair = []
-        for item in new_value:
-            if item[0] == item[1]:
-                pair.append((item[0], item[1]))
-        if len(pair) == 1:
-            return pair
-        else:
-            return None
 
-    def two_pair(self, _):
-        #To check for a two sets of pair, Takes the player + community cards as input and returns the value of the two sets of pair if there is a match, Else returns NONE.
-        value = []
-        for item in _:
-            value.append(item.split("_")[0])
-        player_cards = [value[0], value[1]]
-        community_cards = [value[2], value[3], value[4]]
-        new_value = []
-        for value1 in player_cards:
-            for value2 in community_cards:
-                new_value.append((value1, value2))
-        new_value.append(player_cards)
-        two_pair = []
-        for item in new_value:
-            if item[0] == item[1]:
-                two_pair.append((item[0], item[1]))
-        if len(two_pair) > 1:
-            return two_pair
-        else:
-            return None
-
-    def three_of_a_kind(self, _):
-        #To check for a triplet, Takes the player + community cards as input and returns the value of the triplet if there is a match, Else returns NONE.
-        value = []
-        for item in _:
-            value.append(item.split("_")[0])
-        new_value = []
-        for value1, value2, value3 in itertools.combinations(value, 3):
-            new_value.append((value1, value2, value3))
-        triplet = []
-        for item in new_value:
-            if item[0] == item[1] and item[1] == item[2]:
-                triplet.append((item[0], item[1], item[2]))
-        if len(triplet) != 0:
-            return triplet
-        else:
-            return None
-
-    def four_of_a_kind(self, _):
-        #To check for four of the same card values, Takes the player + community cards as input and returns the value of the four cards if there is a match, Else returns NONE.
-        value = []
-        for item in _:
-            value.append(item.split("_")[0])
-        new_value = []
-        for value1, value2, value3, value4 in itertools.combinations(value, 4):
-            new_value.append((value1, value2, value3, value4))
-        four_of_a_kind = []
-        for item in new_value:
-            if item[0] == item[1] and item[1] == item[2] and item[2] == item[3]:
-                four_of_a_kind.append((item[0], item[1], item[2], item[3]))
-        if len(four_of_a_kind) != 0:
-            return four_of_a_kind
-        else:
-            return None
-
-    def full_house(self, _):
-        #To check for a FullHouse(Pair + Triplet), Takes the player + community cards as input and returns the value of the pair and triplet if there is a match, Else returns NONE.
-        value = []
-        for item in _:
-            value.append(item.split("_")[0])
-        player_cards = [value[0], value[1]]
-        community_cards = [value[2], value[3], value[4]]
-        new_value = []
-        for value1 in player_cards:
-            for value2 in community_cards:
-                new_value.append((value1, value2))
-        new_value.append(player_cards)
-        pair = []
-        for item in new_value:
-            if item[0] == item[1]:
-                pair.append((item[0], item[1]))
-        value = []
-        for item in _:
-            value.append(item.split("_")[0])
-        new_value = []
-        for value1, value2, value3 in itertools.combinations(value, 3):
-            new_value.append((value1, value2, value3))
-        triplet = []
-        for item in new_value:
-            if item[0] == item[1] and item[1] == item[2]:
-                triplet.append((item[0], item[1], item[2]))
-        if len(triplet) == 1 and len(pair) == 1:
-            return (triplet, pair)
-        else:
-            return None, None
-
-    def straight(self, _):
-        #To check for a straight set of values, Takes the player + community cards as input and returns the straight values if there is a match, Else returns NONE.
-        value = []
-        for item in _:
-            value.append(item.split("_")[0])
-        rank = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
-        card_position = []
-        card_value = []
-        for position, item in enumerate(rank):
-            if item in value:
-                card_position.append(position)
-                card_value.append(item)
-        groups = []
-        value1 = value2 = card_position[0]
-        for item in card_position[1:]:
-            if item == value2 + 1:
-                value2 = item
-            else:
-                groups.append(value1 if value1 == value2 else (value1, value2))
-                value1 = value2 = item
-        groups.append(value1 if value1 == value2 else (value1, value2))
-        if len(groups) == 1:
-            return card_value
-        else:
-            return None
-
-    def straight_flush(self, _):
-         #To check for a straight set of values, Takes the player + community cards as input and returns the straight values if there is a match, Else returns NONE.
-         #To check for a FLUSH(cards belonging to same deck.), Takes the player + community cards as inputs and checks for FLUSH, Returns the card suit if suit matches, Else return NONE.
-        suit = []
-        for item in _:
-            suit.append(item.split("_")[1])
-        club = "♣"
-        diamond = "♦"
-        heart = "♥"
-        spade = "♠"
-        cflush = True
-        dflush = True
-        hflush = True
-        sflush = True
-        for item in suit:
-            if club != item:
-                cflush = False
-                break
-        for item in suit:
-            if diamond != item:
-                dflush = False
-                break
-        for item in suit:
-            if heart != item:
-                hflush = False
-                break
-        for item in suit:
-            if spade != item:
-                sflush = False
-                break
-        value = []
-        for item in _:
-            value.append(item.split("_")[0])
-        rank = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
-        card_position = []
-        card_value = []
-        for position, item in enumerate(rank):
-            if item in value:
-                card_position.append(position)
-                card_value.append(item)
-        groups = []
-        value1 = value2 = card_position[0]
-        for item in card_position[1:]:
-            if item == value2 + 1:
-                value2 = item
-            else:
-                groups.append(value1 if value1 == value2 else (value1, value2))
-                value1 = value2 = item
-        groups.append(value1 if value1 == value2 else (value1, value2))
-        if len(groups) and cflush:
-            return card_value, suit
-        elif len(groups) and dflush:
-            return card_value, suit
-        elif len(groups) and hflush:
-            return card_value, suit
-        elif len(groups) and sflush:
-            return card_value, suit
-        else:
-            return None, None
-
-    def royal_flush(self, _):
-        #To check for a FLUSH(cards belonging to same deck.), Takes the player + community cards as inputs and checks for FLUSH, Returns the card suit if suit matches, Else return NONE.
-        #To check if the value of the cards are according to the rank ["10", "J", "Q", "K", "A"]
-        suit = []
-        for item in _:
-            suit.append(item.split("_")[1])
-        club = "♣"
-        diamond = "♦"
-        heart = "♥"
-        spade = "♠"
-        cflush = True
-        dflush = True
-        hflush = True
-        sflush = True
-        for item in suit:
-            if club != item:
-                cflush = False
-                break
-        for item in suit:
-            if diamond != item:
-                dflush = False
-                break
-        for item in suit:
-            if heart != item:
-                hflush = False
-                break
-        for item in suit:
-            if spade != item:
-                sflush = False
-                break
-        rank = ["10", "J", "Q", "K", "A"]
-        value = []
-        count = 0
-        for item in _:
-            value.append(item.split("_")[0])
-        for item in value:
-            if item in rank:
-                count += 1
-        if count == 5 and cflush:
-            return count
-        elif count == 5 and dflush:
-            return count
-        elif count == 5 and hflush:
-            return count
-        elif count == 5 and sflush:
-            return count
-        else:
-            return None, None
+class WinnerCheck:
+    pass
 
 
 def test():
-    #To test the above classes and functions, just for testing purpose.
+    """
+    To test the above classes and functions, just for testing purpose.
+    """
     card = Card(10, "♠")
     my_card = card.return_card()
     print(my_card)
@@ -435,10 +790,14 @@ def test():
 
 
 def hello_world_bot():
-    #A sample of the game, Two primitive bots playing a game of poker and a winner is decided at the end of 10 rounds.
+    """
+    A sample of the game, Two primitive bots playing a game of poker and a
+    winner is decided at the end of 10 rounds.
+    """
     time.sleep(1)
-    ranking = ["Royal Flush", "Straight Flush", "Four of a Kind", "Full House", "Flush", "Straight",
-               "Three of a Kind", "Two Pairs", "Pair", "High Card"]
+    ranking = ["Royal Flush", "Straight Flush", "Four of a Kind", "Full House",
+               "Flush", "Straight", "Three of a Kind", "Two Pairs", "Pair",
+               "High Card"]
     print("Welcome to Poker Game!")
     print("♣ ♦ ♥ ♠")
     print(" ")
@@ -491,71 +850,73 @@ def hello_world_bot():
         player1_cHand = player1_hand + community_cards_hand
         player2_cHand = player2_hand + community_cards_hand
         royal1, flush1 = win_condition.royal_flush(player1_cHand)
-        if royal1 != None and flush1 != None:
+        if royal1 is not None and flush1 is not None:
             player1_rank.append("Royal Flush")
         royal2, flush2 = win_condition.royal_flush(player2_cHand)
-        if royal2 != None and flush2 != None:
+        if royal2 is not None and flush2 is not None:
             player2_rank.append("Royal Flush")
         straight1, flush1 = win_condition.straight_flush(player1_cHand)
-        if straight1 != None and flush1 != None:
+        if straight1 is not None and flush1 is not None:
             player1_rank.append("Straight Flush")
         straight2, flush2 = win_condition.straight_flush(player2_cHand)
-        if straight2 != None and flush2 != None:
+        if straight2 is not None and flush2 is not None:
             player2_rank.append("Straight Flush")
         four_of_a_kind1 = win_condition.four_of_a_kind(player1_cHand)
-        if four_of_a_kind1 != None:
+        if four_of_a_kind1 is not None:
             player1_rank.append("Four of a Kind")
         four_of_a_kind2 = win_condition.four_of_a_kind(player2_cHand)
-        if four_of_a_kind2 != None:
+        if four_of_a_kind2 is not None:
             player2_rank.append("Four of a Kind")
         straight1 = win_condition.straight(player1_cHand)
-        if straight1 != None:
+        if straight1 is not None:
             player1_rank.append("Straight")
         straight2 = win_condition.straight(player2_cHand)
-        if straight2 != None:
+        if straight2 is not None:
             player2_rank.append("Straight")
-        full_house1_triplet, full_house1_pair = win_condition.full_house(player1_cHand)
-        if full_house1_triplet != None and full_house1_pair != None:
+        full_house1_triplet, full_house1_pair = win_condition.full_house(
+            player1_cHand)
+        if full_house1_triplet is not None and full_house1_pair is not None:
             player1_rank.append("Full House")
-        full_house2_triplet, full_house2_pair = win_condition.full_house(player2_cHand)
-        if full_house2_triplet != None and full_house2_pair != None:
+        full_house2_triplet, full_house2_pair = win_condition.full_house(
+            player2_cHand)
+        if full_house2_triplet is not None and full_house2_pair is not None:
             player2_rank.append("Full House")
         flush1 = win_condition.flush(player1_cHand)
-        if flush1 != None:
+        if flush1 is not None:
             player1_rank.append("Flush")
         flush2 = win_condition.flush(player2_cHand)
-        if flush2 != None:
+        if flush2 is not None:
             player2_rank.append("Flush")
         triplet1 = win_condition.triplet(player1_cHand)
-        if triplet1 != None:
+        if triplet1 is not None:
             player1_rank.append("Three of a Kind")
         triplet2 = win_condition.triplet(player2_cHand)
-        if triplet2 != None:
+        if triplet2 is not None:
             player2_rank.append("Three of a Kind")
         two_pair1 = win_condition.two_pair(player1_cHand)
-        if two_pair1 != None:
+        if two_pair1 is not None:
             player1_rank.append("Two Pairs")
         two_pair2 = win_condition.two_pair(player2_cHand)
-        if two_pair2 != None:
+        if two_pair2 is not None:
             player2_rank.append("Two Pairs")
         pair1 = win_condition.pair(player1_cHand)
-        if pair1 != None:
+        if pair1 is not None:
             player1_rank.append("Pair")
         pair2 = win_condition.pair(player2_cHand)
-        if pair2 != None:
+        if pair2 is not None:
             player2_rank.append("Pair")
         high_card1 = win_condition.high_card(player1_cHand)
-        if high_card1 != None:
+        if high_card1 is not None:
             player1_rank.append("High Card")
         high_card2 = win_condition.high_card(player2_cHand)
-        if high_card2 != None:
+        if high_card2 is not None:
             player2_rank.append("High Card")
         rounds += 1
         position1 = []
         position2 = []
         for position, item in enumerate(ranking):
             if item in player1_rank:
-                position1.append((position, item))          
+                position1.append((position, item))
         for position, item in enumerate(ranking):
             if item in player2_rank:
                 position2.append((position, item))
@@ -564,7 +925,8 @@ def hello_world_bot():
         if len(position2) != 0:
             print(position2[0][1])
         print(" ")
-        if len(position1) != 0 and len(position2) != 0 and position1[0][0] < position2[0][0]:
+        if (len(position1) != 0 and len(position2) != 0 and position1[0][0] <
+                position2[0][0]):
             if position1[0][1] == "Royal Flush":
                 player1_points += 100
             elif position1[0][1] == "Straight Flush":
@@ -589,7 +951,8 @@ def hello_world_bot():
                 player1_points += 0
             else:
                 player1_points += 0
-        elif len(position1) != 0 and len(position2) != 0 and position2[0][0] < position1[0][0]:
+        elif (len(position1) != 0 and len(position2) != 0 and position2[0][0] <
+                position1[0][0]):
             if position2[0][1] == "Royal Flush":
                 player2_points += 100
             elif position2[0][1] == "Straight Flush":
@@ -688,6 +1051,65 @@ def hello_world_bot():
             break
 
 
+def test2():
+    """
+    To test the above classes and functions, just for testing purpose.
+    """
+    deck = Deck()
+    deck.build_deck()
+    deck.shuffle_deck()
+    deck.shuffle_deck()
+    deck.shuffle_deck()
+    deck.shuffle_deck()
+    deck.shuffle_deck()
+    shuffle_deck = deck.return_deck()
+    print(" ")
+    print("Shuffled Deck!")
+    print(shuffle_deck)
+    print(" ")
+    player1 = Player()
+    player2 = Player()
+    player3 = Player()
+    player4 = Player()
+    player5 = Player()
+    player1.draw_hand(shuffle_deck)
+    player1.draw_hand(shuffle_deck)
+    player1_hand = player1.return_hand()
+    print("Player1 Hand!")
+    print(player1_hand)
+    player2.draw_hand(shuffle_deck)
+    player2.draw_hand(shuffle_deck)
+    player2_hand = player2.return_hand()
+    print("Player2 Hand!")
+    print(player2_hand)
+    player3.draw_hand(shuffle_deck)
+    player3.draw_hand(shuffle_deck)
+    player3_hand = player3.return_hand()
+    print("Player3 Hand!")
+    print(player3_hand)
+    player4.draw_hand(shuffle_deck)
+    player4.draw_hand(shuffle_deck)
+    player4_hand = player4.return_hand()
+    print("Player4 Hand!")
+    print(player4_hand)
+    player5.draw_hand(shuffle_deck)
+    player5.draw_hand(shuffle_deck)
+    player5_hand = player5.return_hand()
+    print("Player5 Hand!")
+    print(player5_hand)
+    community_cards = Player()
+    community_cards.draw_hand(shuffle_deck)
+    community_cards.draw_hand(shuffle_deck)
+    community_cards.draw_hand(shuffle_deck)
+    community_cards.draw_hand(shuffle_deck)
+    community_cards.draw_hand(shuffle_deck)
+    community_cards_hand = community_cards.return_hand()
+    print("Community Cards!")
+    print(community_cards_hand)
+    print(" ")
+
+
 if __name__ == "__main__":
     # test()
-    hello_world_bot()
+    # hello_world_bot()
+    test2()
