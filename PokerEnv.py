@@ -8,8 +8,8 @@ Created on Tue Sep 24 21:37:28 2019
 
 # The code for implementing the Cards, decks and flushes.
 from PokerGame import *
-
-
+import numpy as np
+# from PokerScore import *
 # Defined Player Attributes that help in decision making
 #Each score ranges from 0-100
 default_attributes = {'caution':50,'greed':50,'bluff':50}
@@ -111,6 +111,7 @@ class PokerEnvironment(object):
             
             
             action_str = action_list[action]
+            print("The player has:",action_str)
             if self.stage == 'flop' or self.stage == 'turn' or self.stage == 'river':
                 if action_str == "CHECK":
                     try:
@@ -206,6 +207,9 @@ class PokerEnvironment(object):
                 if action_str == "FOLD":
                     self.folden_indexes.append(i)
                     #del self.player_objects[i]
+            
+            if len(self.bets_placed) > 0 and (sum(self.bets_placed)/self.n_players) == self.bets_placed[0]:
+                break
                     
         self.n_players -= len(self.folden_indexes)
         
@@ -374,10 +378,92 @@ class Agent(object):
         print("Player ",player_id," Turn")
         print("Controls Available:",self.available_actions)
         print("Community Cards:",community_cards)
+        print("Player Attributes:",self.player_attributes)
+        score = float(input("HandScore:"))
+        #score = self.calculate_score_of_hand(self.hand,community_cards)
+        #score = score/50 #Here 50 is the max score possible.
+        print("Player Score:",score)
+        # Probablistic agent starts here
+        probabilities_actions = {}
+        
+        for i in range(len(self.available_actions)):
+                probabilities_actions[i] = 0
         
         
+        # Effect of bets on attributes
+        
+        
+        try:
+           previous_bet = bets_placed[player_id]
+        except:
+            previous_bet = minimum_bet_amount
+        mean_bet = np.mean(bets_placed)        
+        
+        caution_effect = 0
+        greed_effect = 0
+        bluff_effect = 0
+        
+        if minimum_bet_amount>previous_bet:
+            caution_effect += 1
+            greed_effect -= 1
+        else:
+            caution_effect -= 1
+            greed_effect +=1
+            bluff_effect += 1
+        if mean_bet > previous_bet:
+            caution_effect += 2
+            greed_effect -= 1
+            
+        else:
+            caution_effect -= 2
+            greed_effect += 1
+            bluff_effect += 1
+
+
+        
+        self.player_attributes['caution'] += caution_effect
+        self.player_attributes['greed'] += greed_effect
+        self.player_attributes['bluff'] += bluff_effect
+        
+        
+        
+        
+        if self.stage == 'pre_flop':
+            
+            #Initialize probabilities based on attributes
+            probabilities_actions[0] += self.player_attributes['caution']*(score/1.5)  + self.player_attributes['greed']*(score/3) + self.player_attributes['bluff']*(score/3)
+            
+            probabilities_actions[1] += -self.player_attributes['caution']*((1-score)/2) + self.player_attributes['greed']*(score/(1.2)) + self.player_attributes['bluff']*score
+            
+            probabilities_actions[2] += self.player_attributes['caution']*(1-score)/2
+            
+            
+            
+        else:
+            
+            probabilities_actions[0] += self.player_attributes['caution']*(score) + self.player_attributes['bluff']*(score)
+            
+            
+            probabilities_actions[1] += self.player_attributes['caution']*(score/1.5)  + self.player_attributes['greed']*(score/3) + self.player_attributes['bluff']*(score/3)
+            
+            probabilities_actions[2] += -self.player_attributes['caution']*((1-score)/2) + self.player_attributes['greed']*(score/(1.2)) + self.player_attributes['bluff']*score
+            
+            probabilities_actions[3] += self.player_attributes['caution']*(1-score)/2
+            
+        
+            
+        
+        
+        
+        
+        
+        
+        
+        print(probabilities_actions)
+        prob_array = [x[1] for x in probabilities_actions.items()]
         #Each agent makes a random decision.
-        a = random.randint(0,len(self.available_actions)-1)
+        a = np.argmax(prob_array)
+        print(a)
         return int(a),minimum_bet_amount*2
         pass
     
@@ -388,6 +474,9 @@ class Agent(object):
     def calculate_score_of_hand(self,hand,community=None):
         if community==None:
             community=[]
+        
+        
+        # return Pscore(self.stage,hand,community)
         #For now hand scores are random.
         self.rp = 1 * random.randint(0,5)
         self.sf = 0.9 * random.randint(0,5)
@@ -422,8 +511,8 @@ print("Welcome to Emotional Poker!")
 players_list = []
 for i in range(8):
     p = Player()
-    emotion = random.randint(0,5)
-    power = random.random()
+    emotion = int(input("Emotion:"))
+    power = float(input("Power:"))
     a = Agent(p,1000,emotion,power)
     players_list.append(a)
 
@@ -436,13 +525,14 @@ env = PokerEnvironment(players_list)
 env.reset()
 
 env.show()
-'''
+
 env.pre_flop()
+
 env.flop()
 env.turn()
 env.river()
 env.show()
-'''
+
 
 
 
