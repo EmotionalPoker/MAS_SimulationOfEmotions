@@ -32,7 +32,7 @@ def hand_score(handcards):
         c, d = [a[0], b[0]], [a[1], b[1]]
         # print(c, d)
         if d[0] == d[1]:
-            score += 300
+            score += 200
             # print(score)
             flush_final_data.append([x, score])
         else:
@@ -51,7 +51,7 @@ def hand_score(handcards):
         if c[0] == c[1]:
             for pos2, item in enumerate(rank):
                 if c[0] == c[1] == item:
-                    score = score + ((pos2 + 1) * 30)
+                    score = score + ((pos2 + 1) * 15)
             e = flush_final_data[pos1][-1]
             score = score + e
             pair_flush_final_data.append([x, score])
@@ -77,9 +77,9 @@ def hand_score(handcards):
                 position2 = pos2
         if position1 + 1 == position2 or position2 + 1 == position1:
             if position1 > position2:
-                score = score + ((position1 + 1) * 20)
+                score = score + ((position1 + 1) * 10)
             elif position2 > position1:
-                score = score + ((position2 + 1) * 20)
+                score = score + ((position2 + 1) * 10)
             # print(score)
             e = pair_flush_final_data[pos1][-1]
             score = score + e
@@ -105,12 +105,12 @@ def hand_score(handcards):
             if c[1] == item:
                 position2 = pos2
         if position1 > position2:
-            score = score + ((position1 + 1) * 10)
+            score = score + ((position1 + 1) * 5)
             e = straight_pair_flush_final_data[pos1][-1]
             score = score + e
             high_straight_pair_flush_final_data.append([x, score])
         elif position2 > position1:
-            score = score + ((position2 + 1) * 10)
+            score = score + ((position2 + 1))
             e = straight_pair_flush_final_data[pos1][-1]
             score = score + e
             high_straight_pair_flush_final_data.append([x, score])
