@@ -24,6 +24,7 @@ for i in hand_2:
 def hand_score(handcards):
     score = 0
     flush_final_data = []
+    handcards = [handcards]
     for x in handcards:
         # print(x)
         a, b = x[0].split("_"), x[1].split("_")
@@ -118,6 +119,7 @@ def hand_score(handcards):
             score = score + e
             high_straight_pair_flush_final_data.append([x, score])
         # print(score)
+        # print(high_straight_pair_flush_final_data)
         e = 0
         score = 0
-        return (high_straight_pair_flush_final_data[-1]/1000)
+        return (high_straight_pair_flush_final_data[-1][-1]/1000)
