@@ -26,6 +26,7 @@ def royal_flush(a):
     flushcount = []
     playercount = []
     flushplayercount = []
+    # print(playercommunitycards)
     for items in playercommunitycards:
         for item in items:
             player.append(item.split("_")[1])
@@ -685,139 +686,131 @@ def high_card(a):
 def flop_turn_river(fullcards):
     new_final_data = []
     score = 0
-    for x in fullcards:
-        res = royal_flush([list(x)])
-        if res is not None:
-            score = score + (150)
-            new_final_data.append([x, score])
-        else:
-            new_final_data.append([x, score])
-        score = 0
-        res = 0
+    res = royal_flush([list(fullcards)])
+    if res is not None:
+        score = score + (150)
+        new_final_data.append([fullcards, score])
+    else:
+        new_final_data.append([fullcards, score])
+    score = 0
+    res = 0
+    # print(new_final_data)
     anew_final_data = []
-    for pos, x in enumerate(fullcards):
-        res = straight_flush([list(x)])
-        if res is not None:
-            score = score + (140)
-            o = new_final_data[pos][-1]
-            score = score + o
-            anew_final_data.append([x, score])
-        else:
-            o = new_final_data[pos][-1]
-            score = score + o
-            anew_final_data.append([x, score])
-        score = 0
-        res = 0
+    res = straight_flush([list(fullcards)])
+    if res is not None:
+        score = score + (140)
+        o = new_final_data[-1][-1]
+        score = score + o
+        anew_final_data.append([fullcards, score])
+    else:
+        o = new_final_data[-1][-1]
+        score = score + o
+        anew_final_data.append([fullcards, score])
+    score = 0
+    res = 0
+    # print(anew_final_data)
     bnew_final_data = []
-    for pos, x in enumerate(fullcards):
-        res = four_of_a_kind([list(x)])
-        if res is not None:
-            score = score + (130)
-            o = anew_final_data[pos][-1]
-            score = score + o
-            bnew_final_data.append([x, score])
-        else:
-            o = anew_final_data[pos][-1]
-            score = score + o
-            bnew_final_data.append([x, score])
-        score = 0
-        res = 0
+    res = four_of_a_kind([list(fullcards)])
+    if res is not None:
+        score = score + (130)
+        o = anew_final_data[-1][-1]
+        score = score + o
+        bnew_final_data.append([fullcards, score])
+    else:
+        o = anew_final_data[-1][-1]
+        score = score + o
+        bnew_final_data.append([fullcards, score])
+    score = 0
+    res = 0
     cnew_final_data = []
-    for pos, x in enumerate(fullcards):
-        res = full_house([list(x)])
-        if res is not None:
-            score = score + (120)
-            o = bnew_final_data[pos][-1]
-            score = score + o
-            cnew_final_data.append([x, score])
-        else:
-            o = bnew_final_data[pos][-1]
-            score = score + o
-            cnew_final_data.append([x, score])
-        score = 0
-        res = 0
+    res = full_house([list(fullcards)])
+    if res is not None:
+        score = score + (120)
+        o = bnew_final_data[-1][-1]
+        score = score + o
+        cnew_final_data.append([fullcards, score])
+    else:
+        o = bnew_final_data[-1][-1]
+        score = score + o
+        cnew_final_data.append([fullcards, score])
+    score = 0
+    res = 0
     dnew_final_data = []
-    for pos, x in enumerate(fullcards):
-        res = flush([list(x)])
-        if res is not None:
-            score = score + (110)
-            o = cnew_final_data[pos][-1]
-            score = score + o
-            dnew_final_data.append([x, score])
-        else:
-            o = cnew_final_data[pos][-1]
-            score = score + o
-            dnew_final_data.append([x, score])
-        score = 0
-        res = 0
+    res = flush([list(fullcards)])
+    if res is not None:
+        score = score + (110)
+        o = cnew_final_data[-1][-1]
+        score = score + o
+        dnew_final_data.append([fullcards, score])
+    else:
+        o = cnew_final_data[-1][-1]
+        score = score + o
+        dnew_final_data.append([fullcards, score])
+    score = 0
+    res = 0
     enew_final_data = []
-    for pos, x in enumerate(fullcards):
-        res = straight([list(x)])
-        if res is not None:
-            score = score + (100)
-            o = dnew_final_data[pos][-1]
-            score = score + o
-            enew_final_data.append([x, score])
-        else:
-            o = dnew_final_data[pos][-1]
-            score = score + o
-            enew_final_data.append([x, score])
-        score = 0
-        res = 0
+    res = straight([list(fullcards)])
+    if res is not None:
+        score = score + (100)
+        o = dnew_final_data[-1][-1]
+        score = score + o
+        enew_final_data.append([fullcards, score])
+    else:
+        o = dnew_final_data[-1][-1]
+        score = score + o
+        enew_final_data.append([fullcards, score])
+    score = 0
+    res = 0
     fnew_final_data = []
-    for pos, x in enumerate(fullcards):
-        res = three_of_a_kind([list(x)])
-        if res is not None:
-            score = score + (90)
-            o = enew_final_data[pos][-1]
-            score = score + o
-            fnew_final_data.append([x, score])
-        else:
-            o = enew_final_data[pos][-1]
-            score = score + o
-            fnew_final_data.append([x, score])
-        score = 0
-        res = 0
+    res = three_of_a_kind([list(fullcards)])
+    if res is not None:
+        score = score + (90)
+        o = enew_final_data[-1][-1]
+        score = score + o
+        fnew_final_data.append([fullcards, score])
+    else:
+        o = enew_final_data[-1][-1]
+        score = score + o
+        fnew_final_data.append([fullcards, score])
+    score = 0
+    res = 0
     gnew_final_data = []
-    for pos, x in enumerate(fullcards):
-        res = two_pair([list(x)])
-        if res is not None:
-            score = score + (80)
-            o = fnew_final_data[pos][-1]
-            score = score + o
-            gnew_final_data.append([x, score])
-        else:
-            o = fnew_final_data[pos][-1]
-            score = score + o
-            gnew_final_data.append([x, score])
-        score = 0
-        res = 0
+    res = two_pair([list(fullcards)])
+    if res is not None:
+        score = score + (80)
+        o = fnew_final_data[-1][-1]
+        score = score + o
+        gnew_final_data.append([fullcards, score])
+    else:
+        o = fnew_final_data[-1][-1]
+        score = score + o
+        gnew_final_data.append([fullcards, score])
+    score = 0
+    res = 0
     hnew_final_data = []
-    for pos, x in enumerate(fullcards):
-        res = pair([list(x)])
-        if res is not None:
-            score = score + (res * 5)
-            o = gnew_final_data[pos][-1]
-            score = score + o
-            hnew_final_data.append([x, score])
-        else:
-            o = gnew_final_data[pos][-1]
-            score = score + o
-            hnew_final_data.append([x, score])
-        score = 0
-        res = 0
+    res = pair([list(fullcards)])
+    if res is not None:
+        score = score + (res * 5)
+        o = gnew_final_data[-1][-1]
+        score = score + o
+        hnew_final_data.append([fullcards, score])
+    else:
+        o = gnew_final_data[-1][-1]
+        score = score + o
+        hnew_final_data.append([fullcards, score])
+    score = 0
+    res = 0
     inew_final_data = []
-    for pos, x in enumerate(fullcards):
-        res = high_card([list(x)])
-        if res is not None:
-            score = score + (res)
-            o = hnew_final_data[pos][-1]
-            score = score + o
-            inew_final_data.append([x, score])
-        else:
-            o = hnew_final_data[pos][-1]
-            score = score + o
-            inew_final_data.append([x, score])
-        score = 0
-        res = 0
-        return (inew_final_data[-1]/1000)
+    res = high_card([list(fullcards)])
+    if res is not None:
+        score = score + (res)
+        o = hnew_final_data[-1][-1]
+        score = score + o
+        inew_final_data.append([fullcards, score])
+    else:
+        o = hnew_final_data[-1][-1]
+        score = score + o
+        inew_final_data.append([fullcards, score])
+    score = 0
+    res = 0
+    return (inew_final_data[-1][-1]/1000)
