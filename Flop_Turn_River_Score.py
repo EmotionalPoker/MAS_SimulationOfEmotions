@@ -790,7 +790,7 @@ def flop_turn_river(fullcards):
     hnew_final_data = []
     res = pair([list(fullcards)])
     if res is not None:
-        score = score + (res * 50)
+        score = score + (res * 15)
         o = gnew_final_data[-1][-1]
         score = score + o
         hnew_final_data.append([fullcards, score])
