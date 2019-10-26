@@ -51,7 +51,7 @@ def hand_score(handcards):
         if c[0] == c[1]:
             for pos2, item in enumerate(rank):
                 if c[0] == c[1] == item:
-                    score = score + ((pos2 + 1) * 20)
+                    score = score + ((pos2 + 1) * 30)
             e = flush_final_data[pos1][-1]
             score = score + e
             pair_flush_final_data.append([x, score])
