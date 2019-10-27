@@ -260,8 +260,9 @@ class Poker:
         # print(new_group)
         straightplayer = []
         for pos, items in enumerate(new_group):
-            if items[0][-1] - items[0][0] == 4:
-                straightplayer.append(pos)
+            if len(items) != 0:
+                if items[0][-1] - items[0][0] == 4:
+                    straightplayer.append(pos)
         # print(straightplayer)
         for item in straightplayer:
             for items in flushplayercount:
