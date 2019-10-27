@@ -526,10 +526,12 @@ class Poker:
         for items in flushplayercount:
             if len(items) == 1:
                 finalflush.append(items)
-        if len(finalflush[0]) == 1:
-            return finalflush[0][0]
-        else:
-            return None
+        if len(finalflush) != 0:
+            for items in finalflush:
+                if len(items) == 1:
+                    return items[0][0]
+                else:
+                    return None
 
     def three_of_a_kind(self):
         """
