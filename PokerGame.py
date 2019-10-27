@@ -104,8 +104,8 @@ class Poker:
         for items in player_cards:
             for item in items:
                 self.playercards.append(item)
-        print(self.playercards)
-        print(self.communitycards)
+        # print(self.playercards)
+        # print(self.communitycards)
 
     def royal_flush(self):
         """
@@ -479,8 +479,9 @@ class Poker:
         # print(new_group)
         straightplayer = []
         for pos, items in enumerate(new_group):
-            if items[0][-1] - items[0][0] == 4:
-                straightplayer.append(pos)
+            if len(items) != 0:
+                if items[0][-1] - items[0][0] == 4:
+                    straightplayer.append(pos)
         # print(straightplayer)
         if len(straightplayer) == 1:
             return straightplayer[0]
@@ -509,7 +510,7 @@ class Poker:
                 player.append(item.split("_")[1])
             suit.append(player)
             player = []
-        print(suit)
+        # print(suit)
         cardclass = ["♣", "♦", "♥", "♠"]
         for items in cardclass:
             for item in suit:
@@ -522,12 +523,12 @@ class Poker:
             flushplayercount.append(playercount)
             playercount = []
             flushcount = []
-        print(flushplayercount)
+        # print(flushplayercount)
         finalflush = []
         for items in flushplayercount:
             if len(items) == 1:
                 finalflush.append(items)
-        print(finalflush)
+        # print(finalflush)
         if len(finalflush) != 0:
             for items in finalflush:
                 if len(items) == 1:
