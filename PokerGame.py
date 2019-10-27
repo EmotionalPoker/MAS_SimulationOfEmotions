@@ -101,10 +101,11 @@ class Poker:
     def __init__(self, communitycards, *player_cards):
         self.playercards = []
         self.communitycards = communitycards
-        for item in player_cards:
-            self.playercards.append(item)
-        # print(self.playercards)
-        # print(self.communitycards)
+        for items in player_cards:
+            for item in items:
+                self.playercards.append(item)
+        print(self.playercards)
+        print(self.communitycards)
 
     def royal_flush(self):
         """
@@ -168,12 +169,13 @@ class Poker:
             if items[1] == 5:
                 new_royal.append(items[0])
         # print(new_royal)
+        final_royal = []
         for item in new_royal:
             for items in flushplayercount:
                 if item in items:
-                    return item
-                else:
-                    return None
+                    final_royal.append(item)
+        for items in new_royal:
+            return items
 
     def straight_flush(self):
         """
@@ -691,7 +693,7 @@ class Poker:
                 player.append(item.split("_")[0])
             value.append(player)
             player = []
-        print(value)
+        # print(value)
         for items in value:
             value1, value2 = items[0], items[1]
             for position, item in enumerate(rank):
@@ -707,13 +709,13 @@ class Poker:
             else:
                 card_rank.append(player[0])
             player = []
-        print(card_rank)
+        # print(card_rank)
         new_card_rank = sorted(card_rank)
-        print(new_card_rank)
+        # print(new_card_rank)
         for position, item in enumerate(card_rank):
             if new_card_rank[-1] == item:
                 final_card_rank.append((position, item))
-        print(final_card_rank)
+        # print(final_card_rank)
         if len(final_card_rank) == 1:
             return final_card_rank[0][0]
         else:
