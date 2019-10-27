@@ -508,28 +508,29 @@ class Poker:
                 player.append(item.split("_")[1])
             suit.append(player)
             player = []
-        # print(suit)
+        print(suit)
         cardclass = ["♣", "♦", "♥", "♠"]
         for items in cardclass:
             for item in suit:
                 flushcount.append(item.count(items))
             # print(flushcount)
             for position, item in enumerate(flushcount):
-                if item >= 5:
+                if item > 5:
                     playercount.append(position)
             # print(playercount)
             flushplayercount.append(playercount)
             playercount = []
             flushcount = []
-        # print(flushplayercount)
+        print(flushplayercount)
         finalflush = []
         for items in flushplayercount:
             if len(items) == 1:
                 finalflush.append(items)
+        print(finalflush)
         if len(finalflush) != 0:
             for items in finalflush:
                 if len(items) == 1:
-                    return items[0][0]
+                    return items[0]
                 else:
                     return None
 
