@@ -38,7 +38,7 @@ def hand_score(handcards):
         c, d = [a[0], b[0]], [a[1], b[1]]
         # print(c, d)
         if d[0] == d[1]:
-            score += 30
+            score += 20
             # print(score)
             flush_final_data.append([x, score])
         else:
