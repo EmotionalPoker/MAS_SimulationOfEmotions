@@ -271,16 +271,16 @@ def full_house(a):
     playercommunitycards = a
     playervalue = [[playercommunitycards[0][0], playercommunitycards[0][1]]]
     communityvalue = []
-    if len(playercommunitycards) == 5:
+    if len(playercommunitycards[0]) == 5:
         communityvalue = [[playercommunitycards[0][2],
                           playercommunitycards[0][3],
                           playercommunitycards[0][4]]]
-    elif len(playercommunitycards) == 6:
+    elif len(playercommunitycards[0]) == 6:
         communityvalue = [[playercommunitycards[0][2],
                           playercommunitycards[0][3],
                           playercommunitycards[0][4],
                           playercommunitycards[0][5]]]
-    elif len(playercommunitycards) == 7:
+    elif len(playercommunitycards[0]) == 7:
         communityvalue = [[playercommunitycards[0][2],
                           playercommunitycards[0][3],
                           playercommunitycards[0][4],
@@ -507,16 +507,16 @@ def two_pair(a):
     playercommunitycards = a
     playervalue = [[playercommunitycards[0][0], playercommunitycards[0][1]]]
     communityvalue = []
-    if len(playercommunitycards) == 5:
+    if len(playercommunitycards[0]) == 5:
         communityvalue = [[playercommunitycards[0][2],
                           playercommunitycards[0][3],
                           playercommunitycards[0][4]]]
-    elif len(playercommunitycards) == 6:
+    elif len(playercommunitycards[0]) == 6:
         communityvalue = [[playercommunitycards[0][2],
                           playercommunitycards[0][3],
                           playercommunitycards[0][4],
                           playercommunitycards[0][5]]]
-    elif len(playercommunitycards) == 7:
+    elif len(playercommunitycards[0]) == 7:
         communityvalue = [[playercommunitycards[0][2],
                           playercommunitycards[0][3],
                           playercommunitycards[0][4],
@@ -567,18 +567,19 @@ def pair(a):
     rank = ["2", "3", "4", "5", "6", "7", "8", "9",
             "10", "J", "Q", "K", "A"]
     playercommunitycards = a
+    # print(playercommunitycards)
     playervalue = [[playercommunitycards[0][0], playercommunitycards[0][1]]]
     communityvalue = []
-    if len(playercommunitycards) == 5:
+    if len(playercommunitycards[0]) == 5:
         communityvalue = [[playercommunitycards[0][2],
                           playercommunitycards[0][3],
                           playercommunitycards[0][4]]]
-    elif len(playercommunitycards) == 6:
+    elif len(playercommunitycards[0]) == 6:
         communityvalue = [[playercommunitycards[0][2],
                           playercommunitycards[0][3],
                           playercommunitycards[0][4],
                           playercommunitycards[0][5]]]
-    elif len(playercommunitycards) == 7:
+    elif len(playercommunitycards[0]) == 7:
         communityvalue = [[playercommunitycards[0][2],
                           playercommunitycards[0][3],
                           playercommunitycards[0][4],
@@ -647,7 +648,8 @@ def high_card(a):
     playercommunitycards = a
     player = []
     # print(playercommunitycards)
-    playervalue = [[playercommunitycards[0][0], playercommunitycards[0][1]]]
+    playervalue = [[playercommunitycards[0][0][0],
+                    playercommunitycards[0][1][0]]]
     # print(playervalue)
     value = []
     for items in playervalue:
@@ -684,11 +686,17 @@ def high_card(a):
 
 
 def flop_turn_river(fullcards):
+    """
+    A function to calculate the score of the cards during the flop, turn, river
+    , rounds of the poker game. Its based on this score that each bot makes a
+    decision to perform the action of call, check, bet, fold, or raise. This
+    score determines the strength of the cards and returns a score value.
+    """
     new_final_data = []
     score = 0
     res = royal_flush([list(fullcards)])
     if res is not None:
-        score = score + (250)
+        score = score + (95)
         new_final_data.append([fullcards, score])
     else:
         new_final_data.append([fullcards, score])
@@ -698,7 +706,7 @@ def flop_turn_river(fullcards):
     anew_final_data = []
     res = straight_flush([list(fullcards)])
     if res is not None:
-        score = score + (230)
+        score = score + (90)
         o = new_final_data[-1][-1]
         score = score + o
         anew_final_data.append([fullcards, score])
@@ -712,7 +720,7 @@ def flop_turn_river(fullcards):
     bnew_final_data = []
     res = four_of_a_kind([list(fullcards)])
     if res is not None:
-        score = score + (225)
+        score = score + (85)
         o = anew_final_data[-1][-1]
         score = score + o
         bnew_final_data.append([fullcards, score])
@@ -725,7 +733,7 @@ def flop_turn_river(fullcards):
     cnew_final_data = []
     res = full_house([list(fullcards)])
     if res is not None:
-        score = score + (220)
+        score = score + (80)
         o = bnew_final_data[-1][-1]
         score = score + o
         cnew_final_data.append([fullcards, score])
@@ -738,7 +746,7 @@ def flop_turn_river(fullcards):
     dnew_final_data = []
     res = flush([list(fullcards)])
     if res is not None:
-        score = score + (215)
+        score = score + (75)
         o = cnew_final_data[-1][-1]
         score = score + o
         dnew_final_data.append([fullcards, score])
@@ -751,7 +759,7 @@ def flop_turn_river(fullcards):
     enew_final_data = []
     res = straight([list(fullcards)])
     if res is not None:
-        score = score + (210)
+        score = score + (70)
         o = dnew_final_data[-1][-1]
         score = score + o
         enew_final_data.append([fullcards, score])
@@ -764,7 +772,7 @@ def flop_turn_river(fullcards):
     fnew_final_data = []
     res = three_of_a_kind([list(fullcards)])
     if res is not None:
-        score = score + (205)
+        score = score + (65)
         o = enew_final_data[-1][-1]
         score = score + o
         fnew_final_data.append([fullcards, score])
@@ -777,7 +785,7 @@ def flop_turn_river(fullcards):
     gnew_final_data = []
     res = two_pair([list(fullcards)])
     if res is not None:
-        score = score + (200)
+        score = score + (60)
         o = fnew_final_data[-1][-1]
         score = score + o
         gnew_final_data.append([fullcards, score])
@@ -790,7 +798,7 @@ def flop_turn_river(fullcards):
     hnew_final_data = []
     res = pair([list(fullcards)])
     if res is not None:
-        score = score + (res * 15)
+        score = score + (55)
         o = gnew_final_data[-1][-1]
         score = score + o
         hnew_final_data.append([fullcards, score])
@@ -803,7 +811,7 @@ def flop_turn_river(fullcards):
     inew_final_data = []
     res = high_card([list(fullcards)])
     if res is not None:
-        score = score + (res * 10)
+        score = score + ((res + 1) * 4)
         o = hnew_final_data[-1][-1]
         score = score + o
         inew_final_data.append([fullcards, score])
@@ -813,4 +821,7 @@ def flop_turn_river(fullcards):
         inew_final_data.append([fullcards, score])
     score = 0
     res = 0
-    return (inew_final_data[-1][-1]/1000)
+    if (inew_final_data[-1][-1]/100) > 1.0:
+        return 1.0
+    else:
+        return (inew_final_data[-1][-1]/100)
