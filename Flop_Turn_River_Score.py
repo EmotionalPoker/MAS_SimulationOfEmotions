@@ -699,7 +699,7 @@ def flop_turn_river(fullcards):
     o = 0
     res = royal_flush([list(fullcards)])
     if res is not None:
-        score = score + (95)
+        score = score + (80)
         new_final_data.append([fullcards, score])
     else:
         new_final_data.append([fullcards, score])
@@ -710,7 +710,7 @@ def flop_turn_river(fullcards):
     anew_final_data = []
     res = straight_flush([list(fullcards)])
     if res is not None:
-        score = score + (90)
+        score = score + (75)
         o = new_final_data[-1][-1]
         score = score + o
         anew_final_data.append([fullcards, score])
@@ -725,7 +725,7 @@ def flop_turn_river(fullcards):
     bnew_final_data = []
     res = four_of_a_kind([list(fullcards)])
     if res is not None:
-        score = score + (85)
+        score = score + (70)
         o = anew_final_data[-1][-1]
         score = score + o
         bnew_final_data.append([fullcards, score])
@@ -739,7 +739,7 @@ def flop_turn_river(fullcards):
     cnew_final_data = []
     res = full_house([list(fullcards)])
     if res is not None:
-        score = score + (80)
+        score = score + (65)
         o = bnew_final_data[-1][-1]
         score = score + o
         cnew_final_data.append([fullcards, score])
@@ -753,7 +753,7 @@ def flop_turn_river(fullcards):
     dnew_final_data = []
     res = flush([list(fullcards)])
     if res is not None:
-        score = score + (75)
+        score = score + (60)
         o = cnew_final_data[-1][-1]
         score = score + o
         dnew_final_data.append([fullcards, score])
@@ -767,7 +767,7 @@ def flop_turn_river(fullcards):
     enew_final_data = []
     res = straight([list(fullcards)])
     if res is not None:
-        score = score + (70)
+        score = score + (55)
         o = dnew_final_data[-1][-1]
         score = score + o
         enew_final_data.append([fullcards, score])
@@ -781,7 +781,7 @@ def flop_turn_river(fullcards):
     fnew_final_data = []
     res = three_of_a_kind([list(fullcards)])
     if res is not None:
-        score = score + (65)
+        score = score + (50)
         o = enew_final_data[-1][-1]
         score = score + o
         fnew_final_data.append([fullcards, score])
@@ -795,7 +795,7 @@ def flop_turn_river(fullcards):
     gnew_final_data = []
     res = two_pair([list(fullcards)])
     if res is not None:
-        score = score + (60)
+        score = score + (45)
         o = fnew_final_data[-1][-1]
         score = score + o
         gnew_final_data.append([fullcards, score])
@@ -809,7 +809,7 @@ def flop_turn_river(fullcards):
     hnew_final_data = []
     res = pair([list(fullcards)])
     if res is not None:
-        score = score + (55)
+        score = score + (40)
         o = gnew_final_data[-1][-1]
         score = score + o
         hnew_final_data.append([fullcards, score])
@@ -823,7 +823,7 @@ def flop_turn_river(fullcards):
     inew_final_data = []
     res = high_card([list(fullcards)])
     if res is not None:
-        score = score + ((res + 1) * 4)
+        score = score + ((res + 1) * 3)
         o = hnew_final_data[-1][-1]
         score = score + o
         inew_final_data.append([fullcards, score])
