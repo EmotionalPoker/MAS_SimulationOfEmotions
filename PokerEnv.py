@@ -4,12 +4,13 @@ Created on Tue Sep 24 21:37:28 2019
 
 @author: battu
 """
-
-
 # The code for implementing the Cards, decks and flushes.
 from PokerGame import *
 import numpy as np
 import math
+
+
+
 # from PokerScore import *
 # Defined Player Attributes that help in decision making
 #Each score ranges from 0-100
@@ -19,6 +20,7 @@ default_attributes = {'caution':50,'greed':50,'bluff':50}
 action_dictionary = {'pre_flop':['CALL','RAISE','FOLD'],'flop':['CHECK','BET','RAISE','FOLD'],'turn':['CHECK','BET','RAISE','FOLD'],'river':['CHECK','BET','RAISE','FOLD']}
 
 emotion_dictionary = {0:'fear',1:'happy',2:'no-emotion',3:'anger',4:'contempt',5:'normal'}
+#Ranking used for score function
 ranks = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14}
 #Gym Environment for Poker
 class PokerEnvironment(object):
@@ -33,7 +35,7 @@ class PokerEnvironment(object):
     self.folden_indexs tells which players have folded.
     self.pot is the total amount of bets placed by all players till the current round.
     self.community_cards is the community cards visible to agents till the current round.
-    
+    self.game_stats gives the game stats at the end of game
     
     '''
     def __init__(self,players_list):
@@ -49,9 +51,7 @@ class PokerEnvironment(object):
         
         for i in range(random.randint(1,5)):
             self.deck_object.shuffle_deck()
-        
         self.main_deck = self.deck_object.return_deck()
-        
         self.stage = None
         self.minimum_bet_amount = 10
         self.bets_placed = []
@@ -60,39 +60,23 @@ class PokerEnvironment(object):
         self.pot = 0
         self.community_cards = []
         self.game_done=0
-        self.game_stats = {'players':[],'winner':0,'win_moves':0,'win_amount':0,'win_hand':0,'win_emotion':0,'win_e_power':0}
+        
+        self.game_stats = {'players':[],'winner':0,'win_moves':0,'win_amount':0,'win_hand':0,'win_emotion':0,'win_e_power':0,'win_e_num':0}
         pass
     
     def reset(self):
         #Make each player draw 2 cards from deck, or deal 2 cards to each player.
-        for i in range(self.n_players):
-            
+        for i in range(self.n_players):    
             self.player_objects[i].player.draw_hand(self.main_deck)
             self.player_objects[i].player.draw_hand(self.main_deck)
-            self.player_objects[i].hand = self.player_objects[i].player.return_hand()
-            
+            self.player_objects[i].hand = self.player_objects[i].player.return_hand()    
         pass
-    
-    
-    #Not implemented, can be inherited and implemented later on(This mimics a gym environment)
-    def step(self,action):
-        pass
-    
-    
-    
-    def render(self):
-        pass
-        # We show the flask or html game here, when it is implemented
-        #Send all information as json to frontend code, where it is rendered.
-      
-        
-        
+     
     #Tell each agent object the current stage of the game, this is a simple message function
     def set_stage(self):
         for i in range(self.n_players):
             self.player_objects[i].set_stage(self.stage)
-            
-    
+                
     #Remove folden players form list
     def del_folden_index(self,a,b,index):
             del a[index]
@@ -108,7 +92,10 @@ class PokerEnvironment(object):
             return
         action_list = action_dictionary[self.stage]
         
+        #Loop over each player
         for i in range(self.n_players):
+            
+            #Declare winner if all players folded
             if len(self.folden_indexes)+1 == self.n_players:
                 for x in range(self.n_players):
                     if x not in self.folden_indexes:
@@ -117,36 +104,34 @@ class PokerEnvironment(object):
                 break
             if i in self.folden_indexes:
                 continue
+            
+            #Get action of each agent, send information to each agent
             if self.stage == 'pre_flop':
                 action,raise_amount = self.player_objects[i].make_decision(self.bets_placed,i,None,self.minimum_bet_amount)
             else:
-                action,raise_amount = self.player_objects[i].make_decision(self.bets_placed,i,self.community_cards,self.minimum_bet_amount)
-            
-            
+                action,raise_amount = self.player_objects[i].make_decision(self.bets_placed,i,self.community_cards,self.minimum_bet_amount)  
             action_str = action_list[action]
-            print("The player has:",action_str)
+            if self.player_objects[i].current_coins<=0:
+                action_str = "FOLD"
+            self.player_objects[i].actions_taken[self.stage].append(action_str)
+            
+            #Based on the stage/round, change parameters of the game.
             if self.stage == 'flop' or self.stage == 'turn' or self.stage == 'river':
                 if action_str == "CHECK":
                     try:
                         if self.bets_placed[i-1] > self.bets_placed[i]:
                             i=i-1
-                            print("Cannot take this action")
                             continue
                         else:
                             pass
                     except Exception as e:
                         if self.bets_placed[-1] > self.bets_placed[i]:
                             i=len(self.bets_placed)-1
-                            print("Cannot take this action")
                             continue
                         else:
                             pass
-                        
-                        
-                if action_str == "BET":
-                    
-                    if len(self.bets_placed)>0:
-                        
+                if action_str == "BET":   
+                    if len(self.bets_placed)>0:        
                         bet_amount  = self.minimum_bet_amount
                         self.pointer = i
                         try:
@@ -155,7 +140,6 @@ class PokerEnvironment(object):
                             self.bets_placed.append(bet_amount)
                         self.player_objects[i].current_coins -= bet_amount
                         self.minimum_bet_amount = bet_amount
-                        
                     else:
                         self.bets_placed.append(self.minimum_bet_amount)
                         self.player_objects[i].current_coins -= self.minimum_bet_amount
@@ -169,13 +153,11 @@ class PokerEnvironment(object):
                         except Exception as e:
                             self.bets_placed.append(bet_amount)
                         self.player_objects[i].current_coins -= bet_amount
-                        self.minimum_bet_amount = bet_amount
-                        
+                        self.minimum_bet_amount = bet_amount  
                     else:
                         self.bets_placed.append(raise_amount)
                         self.minimum_bet_amount = raise_amount 
-                        self.player_objects[i].current_coins -= self.minimum_bet_amount
-                
+                        self.player_objects[i].current_coins -= self.minimum_bet_amount  
                 if action_str == "FOLD":
                     self.folden_indexes.append(i)
                     
@@ -185,18 +167,11 @@ class PokerEnvironment(object):
                     except:
                         self.bets_placed.append(0)
                 
-                
-                
-                
-                
-                
-                
+            # Stage Preflop
             if self.stage == 'pre_flop':
                 
-                if action_str == 'CALL':
-                    
-                    if len(self.bets_placed)>0:
-                        
+                if action_str == 'CALL':   
+                    if len(self.bets_placed)>0:     
                         bet_amount  = self.minimum_bet_amount
                         self.pointer = i
                         try:
@@ -204,8 +179,7 @@ class PokerEnvironment(object):
                         except Exception as e:
                             self.bets_placed.append(bet_amount)
                         self.player_objects[i].current_coins -= bet_amount
-                        self.minimum_bet_amount = bet_amount
-                        
+                        self.minimum_bet_amount = bet_amount     
                     else:
                         self.bets_placed.append(self.minimum_bet_amount)
                         self.player_objects[i].current_coins -= self.minimum_bet_amount
@@ -218,38 +192,20 @@ class PokerEnvironment(object):
                         except Exception as e:
                             self.bets_placed.append(bet_amount)
                         self.player_objects[i].current_coins -= bet_amount
-                        self.minimum_bet_amount = bet_amount
-                        
+                        self.minimum_bet_amount = bet_amount   
                     else:
                         self.bets_placed.append(raise_amount)
                         self.minimum_bet_amount = raise_amount 
                         self.player_objects[i].current_coins -= self.minimum_bet_amount
-                
                 if action_str == "FOLD":
                     self.folden_indexes.append(i)
-                    
                     try:
                         self.pot+=self.bets_placed[i]
                         self.bets_placed[i] = 0
                     except:
                         self.bets_placed.append(0)
-                    #del self.player_objects[i]
-            
-            #if len(self.bets_placed) > 0 and (sum(self.bets_placed)/self.n_players) == self.bets_placed[0]:
-                #break
-                    
-        #self.n_players -= len(self.folden_indexes)
-        
-        
-        
-        #Remove folded players from the game here.
-        '''   
-        for j in range(len(self.folden_indexes)):
-            self.player_objects,self.bets_placed = self.del_folden_index(self.player_objects,self.bets_placed,self.folden_indexes[j])
-            
-            self.folden_indexes = [x-1 for x in self.folden_indexes]
-        self.folden_indexes=[]
-        '''
+                        
+        #Check if game is done, or else get maximum bet
         if self.game_done==1:
             return
         try:
@@ -257,6 +213,8 @@ class PokerEnvironment(object):
         except:
             print("all folded")
             return
+        
+        #Rerun the round if all player bets are not the same.
         temp = self.bets_placed.copy()
         not_safe=0
         for x in range(len(temp)):
@@ -267,17 +225,7 @@ class PokerEnvironment(object):
                 break
         if not_safe==1:
             self.get_player_actions()
-        #temp  = [x - maximum for x in temp]
-        #print(temp)
-        
-        
-            
-                        
-                    
-                        
-                        
-                    
-        
+   
     # High level implementation of pre flop round. 
     def pre_flop(self):
         
@@ -286,15 +234,11 @@ class PokerEnvironment(object):
         self.get_player_actions()
         self.pot += sum(self.bets_placed)
         for i in range(len(self.bets_placed)):
-            self.bets_placed[i] = 0
-             
+            self.bets_placed[i] = 0  
         self.minimum_bet_amount = 10
-        print(self.pot)
-        print('PreFlop Done')
-        
-        
-        
         pass
+    
+    
     #High level implementation of Flop round.
     def flop(self):
         if self.game_done==1:
@@ -311,11 +255,8 @@ class PokerEnvironment(object):
         self.get_player_actions()
         self.pot += sum(self.bets_placed)
         for i in range(len(self.bets_placed)):
-            self.bets_placed[i] = 0
-             
+            self.bets_placed[i] = 0  
         self.minimum_bet_amount = 10
-        print(self.pot)
-        print('Flop Done')
         pass
     
     #High level implementation of Turn round
@@ -330,12 +271,9 @@ class PokerEnvironment(object):
         self.get_player_actions()
         self.pot += sum(self.bets_placed)
         for i in range(len(self.bets_placed)):
-            self.bets_placed[i] = 0
-             
+            self.bets_placed[i] = 0    
         self.minimum_bet_amount = 10
-        print('Turn Done')
         pass
-    
     
     #High level implementation of River round.
     def river(self):
@@ -350,24 +288,27 @@ class PokerEnvironment(object):
         self.pot += sum(self.bets_placed)
         for i in range(len(self.bets_placed)):
             self.bets_placed[i] = 0
-             
         self.minimum_bet_amount = 10
         pass
     
-    
-    #The showdown where player hands are displayed.
+    #Shows hand cards, for debugging
     def show(self):
         for i in range(self.n_players):
             print(self.player_objects[i].hand)
+
+    #The showdown where player hands are displayed, the winner is also declared here
     def showdown(self):
+        self.stage='showdown'
         if self.game_done==1:
             return
         hands = []
+        hand_indexes=[]
         for i in range(self.n_players):
             if i not in self.folden_indexes:
+                hand_indexes.append(i)
                 hands.append(list(self.player_objects[i].hand))
         
-        
+        #Use Poker API to get the best player hand
         p = Poker(self.community_cards,hands)
         rf = p.royal_flush()
         sf = p.straight_flush()
@@ -380,41 +321,51 @@ class PokerEnvironment(object):
         pf = p.pair()
         hc = p.high_card()
         lst = [rf,sf,fof,fh,fl,st,tof,tp,pf,hc]
-        print(lst)
+        
+        #Complete the game
         for i in lst:
             if i!=None and self.game_done==0:
-                self.winner(i)
+                self.winner(hand_indexes[i])
                 break
-        
+        if self.game_done==0:
+            self.winner(random.sample(hand_indexes,1)[0])
         pass
-            
+      
+    #Record End game stats
     def winner(self,player_id):
-        print("Player won:",player_id)
-        print("actions:",self.player_objects[player_id].actions_taken)
-        print("His emotion:",emotion_dictionary[self.player_objects[player_id].emotion])
-        print("winnings:",self.pot+self.bets_placed[player_id]+self.player_objects[player_id].current_coins)
         self.game_done=1
         for i in range(len(self.player_objects)):
             arr = [i,emotion_dictionary[self.player_objects[i].emotion],self.player_objects[i].emotion_power,self.player_objects[i].hand]
             self.game_stats['players'].append(arr)
         self.game_stats['winner'] = player_id
         self.game_stats['win_moves'] = self.player_objects[player_id].actions_taken
-        self.game_stats['win_amount'] = self.pot+self.bets_placed[player_id]+self.player_objects[player_id].current_coins
+        self.game_stats['win_amount'] = self.pot
         self.game_stats['win_hand'] = self.player_objects[player_id].hand
+        self.game_stats['community_cards'] = self.community_cards
         self.game_stats['win_emotion'] = emotion_dictionary[self.player_objects[player_id].emotion]
         self.game_stats['win_e_power'] = self.player_objects[player_id].emotion_power
         
-        
+        self.game_stats['win_e_num'] = self.player_objects[player_id].emotion
+        self.game_stats['last_round'] = self.stage
+        self.game_stats['debt'] = self.player_objects[player_id].current_coins
         pass
 
 
-
-
-
-
-
-        
 class Agent(object):
+    '''Agent Class where each agent object is implemented, each agent object participates in the
+    poker environment.
+    Some attributes are:
+    self.current_coins gives the coins that the agent is holding
+    self.hand gives the current hand of the player
+    self.stage stores the current stage of the game, (preflop,flop etc) in order to make decisions
+    self.actions_taken stores the action history of each agent.
+    self.available_actions gives the available actions for an agent in the particular self.stage
+    self.emotion_power gives the power of the emotion of the agent
+    self.emotion gives the current emotion of the agent
+    self.player_attributes gives the attributes of the agent.
+    
+    
+    '''
     #Each agent takes in the player object from PokerGame package and the amount of coins he has in the beginning.
     def __init__(self,player_object,coins,emotion,power):
         self.current_coins = coins
@@ -422,22 +373,24 @@ class Agent(object):
         self.hand = None
         self.stage = None
         self.actions_taken = {}
-        #Not implemented yet.
-        self.P_rp=0
-        
+         
         #The actions for each player
         self.available_actions = None
         self.emotion_power = power
-        
+
         self.emotion = emotion
         self.player_attributes = default_attributes.copy()
         self.set_attributes()
+    
+    
     #Sets the stage and available actions of the agent. Received from the environment.
     def set_stage(self,stage):
         self.stage = stage
         self.available_actions = action_dictionary[self.stage]
         self.actions_taken[self.stage] = []
+    
     #Here the attributes of each player are set based on their state of emotion.
+    #The formulae below are used to initialize attribute values
     def set_attributes(self):
         base_value = 50
         if emotion_dictionary[self.emotion] == 'fear':
@@ -464,27 +417,20 @@ class Agent(object):
         
     #This is where the agent makes decisions based on the parameters given to it from the environment. Right now random decisions are made.    
     def make_decision(self, bets_placed,player_id,community_cards,minimum_bet_amount):
-        #print("All the bets placed:")
-        #print(bets_placed)
         
-        print("Player ",player_id," Turn")
-        #print("Controls Available:",self.available_actions)
-        #print("Community Cards:",community_cards)
-        #print("Player Attributes:",self.player_attributes)
-        #score = float(input("HandScore:"))
+        #Self evaluation of score of hand
         score = self.calculate_score_of_hand(self.hand,community_cards)
-        #score = score/50 #Here 50 is the max score possible.
-        #print("Player Score:",score)
-        # Probablistic agent starts here
+        
+        #Scores for each actions
         probabilities_actions = {}
         
+        #Initialize scores to zero
         for i in range(len(self.available_actions)):
                 probabilities_actions[i] = 0
         
         
         # Effect of bets on attributes
-        
-        
+        # Attributes are changed by small amounts based on bets placed.
         try:
            previous_bet = bets_placed[player_id]
         except:
@@ -499,9 +445,6 @@ class Agent(object):
                 count+=1
         if count!=0:
             mean_bet = mean_bet/count
-        
-        
-        
         if self.emotion!=2:
             caution_effect = 0
             greed_effect = 0
@@ -516,54 +459,29 @@ class Agent(object):
                 bluff_effect += 0.5
             if mean_bet > previous_bet:
                 caution_effect += 1
-                greed_effect -= 0.5
-                
+                greed_effect -= 0.5  
             else:
                 caution_effect -= 1
                 greed_effect += 0.5
                 bluff_effect += 0.5
-    
-    
-            
             self.player_attributes['caution'] += caution_effect
             self.player_attributes['greed'] += greed_effect
             self.player_attributes['bluff'] += bluff_effect
-            
-            
-            
-            
+
+            #Initialize scores of each action based on emotions, these are small values.
             if self.stage == 'pre_flop':
-                
                 #Initialize probabilities based on attributes
-                probabilities_actions[0] += self.player_attributes['caution']*(score/1.5)  + self.player_attributes['greed']*(score/3) + self.player_attributes['bluff']*(score/3)
-                
-                probabilities_actions[1] += -self.player_attributes['caution']*((1-score)/2) + self.player_attributes['greed']*(score/(1.2)) + self.player_attributes['bluff']*score
-                
-                probabilities_actions[2] += self.player_attributes['caution']*(1-score)/1.5
-                
-                
-                
+                probabilities_actions[0] += (self.player_attributes['caution']*(score/1.5)  + self.player_attributes['greed']*(score/3) + self.player_attributes['bluff']*(score/3))/10
+                probabilities_actions[1] += (-self.player_attributes['caution']*((1-score)/2) + self.player_attributes['greed']*(score/(1.1)) + self.player_attributes['bluff']*score)/10
+                probabilities_actions[2] += (self.player_attributes['caution']*(1-score)/1.5)/10   
             else:
-                
-                probabilities_actions[0] += self.player_attributes['caution']*(score/1.5) + self.player_attributes['bluff']*(score/3)
-                
-                
-                probabilities_actions[1] += self.player_attributes['caution']*(score/1.5)  + self.player_attributes['greed']*(score/3) + self.player_attributes['bluff']*(score/3)
-                
-                probabilities_actions[2] += -self.player_attributes['caution']*((1-score)/2) + self.player_attributes['greed']*(score/(1.2)) + self.player_attributes['bluff']*score
-                
-                probabilities_actions[3] += self.player_attributes['caution']*(1-score)/1.5
-                
-        
-            
-        
-        
-        
-        
-        #Pure Logic
-        
+                probabilities_actions[0] += (self.player_attributes['caution']*(score/1.5) + self.player_attributes['bluff']*(score/3))/10
+                probabilities_actions[1] += (self.player_attributes['caution']*(score/1.5)  + self.player_attributes['greed']*(score/3) + self.player_attributes['bluff']*(score/3))/10 
+                probabilities_actions[2] += (-self.player_attributes['caution']*((1-score)/2) + self.player_attributes['greed']*(score/(1.1)) + self.player_attributes['bluff']*score)/10
+                probabilities_actions[3] += (self.player_attributes['caution']*(1-score)/1.5)/10
+
+        #Normal logical score based on current coins held       
         if self.stage == 'pre_flop':
-        
             probabilities_actions[0] += (self.current_coins/100)
             probabilities_actions[1] += (self.current_coins/200)
             probabilities_actions[2] += 10 - (self.current_coins/100) + minimum_bet_amount/50
@@ -573,37 +491,37 @@ class Agent(object):
             probabilities_actions[1] += (self.current_coins/100)
             probabilities_actions[2] += (self.current_coins/200)
             probabilities_actions[3] += 10 - (self.current_coins/100) + minimum_bet_amount/50
-        
-        if self.emotion==2:
             
-            if self.stage == 'pre_flop':
-        
-                probabilities_actions[0] += score*30
-                probabilities_actions[1] += score*20
-                probabilities_actions[2] += (1-score)*28
-            else:
-                
-                probabilities_actions[0] += score*10
-                probabilities_actions[1] += score*30
-                probabilities_actions[2] += score*20
-                probabilities_actions[3] += (1-score)*25
-            
-        
-        
-        #print(probabilities_actions)
+        # Score of actions based on hand scores
+        if self.stage == 'pre_flop':
+                probabilities_actions[0] += score*30 +(random.random()*4-2)
+                probabilities_actions[1] += score*30 +(random.random()*4-2)
+                probabilities_actions[2] += (1-score)*20 +(random.random()*4-2)
+        else:
+                probabilities_actions[0] += score*10 +(random.random()*4-2)
+                probabilities_actions[1] += score*30 +(random.random()*4-2)
+                probabilities_actions[2] += score*30 +(random.random()*4-2)
+                probabilities_actions[3] += (1-score)*20 +(random.random()*4-2)
+
         prob_array = [x[1] for x in probabilities_actions.items()]
-        #Each agent makes a random decision.
+        #Each agent can make only one move
         a = np.argmax(prob_array)
-        #print(a)
-        self.actions_taken[self.stage].append(action_dictionary[self.stage][a])
+        
+        #When raised, the minimum bet is doubled and the action and the amount are sent back to the environment
         return int(a),minimum_bet_amount*2
         pass
     
     
-    #Not implemented yet, extra information needed for decision making for agents.
-    #Returns the score of hand+community card to aid in decision making
-    
     def score_hand(self,cards):
+        '''
+        Gives the hand score for each agent.
+        The score lies between 0-1
+        Bonus score of +0.4 if all suits are same
+        score is inversely proportional to the distance between card ranks.
+        If the distance between card ranks is higher, the score is low and vice versa.
+        score is directly proportional to the sum of card ranks, the higher the card ranks, the
+        better the score
+        '''
         hand = cards[0:2]
         try:
             community = cards[2:]
@@ -624,11 +542,9 @@ class Agent(object):
             if frequence_suit[i]==0:
                 count+=1
         if count>=3:
-            score += 0.4
-            
+            score += 0.4       
         suit_score = max(frequence_suit.items(),key=lambda x: x[1])[1]
         score += math.exp(suit_score)/1500
-    
         score += ((len(hand)+len(community))/7)*0.1
         ranking = [hand[0].split('_')[0],hand[1].split('_')[0]]
         for i in community:
@@ -650,57 +566,6 @@ class Agent(object):
     def calculate_score_of_hand(self,hand,community=None):
         if community==None:
             community=[]
-        
         score = self.score_hand(hand+community)
-        # return Pscore(self.stage,hand,community)
-        #For now hand scores are random.
-        
-        
         return score
-        
-        pass
-    
-            
-        
-    
-    
-    
-    
-    
-    
-
-        
-        
-### Testing Area     
-#8 Players are created, each are given 1000 coins and a standard poker game is run.
-print("Welcome to Emotional Poker!")
-
-players_list = []
-for i in range(8):
-    p = Player()
-    emotion = random.randint(0,5)
-    power = random.random()
-    a = Agent(p,1000,emotion,power)
-    players_list.append(a)
-
-count=0
-print("Here is a list of Players, along with their emotions and the power of their emotions")
-for i in players_list:
-    print("Player ID:",count,", Emotion:",emotion_dictionary[i.emotion],", Emotion Power:",i.emotion_power)
-    count+=1
-env = PokerEnvironment(players_list)
-env.reset()
-
-env.show()
-
-env.pre_flop()
-
-env.flop()
-env.turn()
-env.river()
-env.showdown()
-
-
-
-
-
+#Testing area below, if needed
