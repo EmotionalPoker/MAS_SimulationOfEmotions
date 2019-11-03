@@ -1,5 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Oct 20 21:37:28 2019
+
+@author: Hari Vidharth
+"""
+
 import tkinter as tk
-import sys
 
 
 root = tk.Tk()
@@ -25,13 +31,15 @@ def validate_entry(text):
 
 root.title("EmotionalPoker!")
 root.state('zoomed')
-t = tk.Label(root, text="Enter the Number of Players(2-9)!", font=("Comic Sans MS", 15, "bold"))
+t = tk.Label(root, text="Enter the Number of Players(2-9)!",
+             font=("Comic Sans MS", 15, "bold"))
 t.pack(side='top')
 vcmd = (root.register(validate_entry), "%P")
 e = tk.Entry(root, validate="key", validatecommand=vcmd)
 e.pack()
 e.focus_set()
-b = tk.Button(root, text='GAMBLE!', font=("Comic Sans MS", 20, "bold"), command=printtext, bg="green")
+b = tk.Button(root, text='GAMBLE!', font=("Comic Sans MS", 20, "bold"),
+              command=printtext, bg="green")
 b.pack(side='bottom')
 image1 = tk.PhotoImage(file="poker_PNG107.png")
 w = image1.width()
@@ -47,7 +55,8 @@ print(val)
 root = tk.Tk()
 root.title("EmotionalPoker!")
 root.state('zoomed')
-t = tk.Label(root, text="Enter the Player Emotions!", font=("Comic Sans MS", 15, "bold"))
+t = tk.Label(root, text="Enter the Player Emotions!",
+             font=("Comic Sans MS", 15, "bold"))
 t.pack(side='top')
 player_count = val
 player_emotions = []
@@ -61,7 +70,8 @@ for variable in v:
     variable.set(1)
 for variable in v_emotions:
     variable.set(0)
-attributes = [("No-emotion"), ("Happy"), ("Fear"), ("Anger"), ("Contempt"), ("Normal")]
+attributes = [("No-emotion"), ("Happy"), ("Fear"), ("Anger"), ("Contempt"),
+              ("Normal")]
 # add no emotion for all players
 for i in range(player_count):
     player_emotions.append(attributes[0])
@@ -85,15 +95,22 @@ def data():
     row = 0
     for player_number in range(player_count):
         label_string = "Select the attribute of player %d" % player_number
-        tk.Label(frame, text=label_string, justify=tk.LEFT, padx=20).grid(row=row, column=0)
+        tk.Label(frame, text=label_string, justify=tk.LEFT, padx=20).grid(
+            row=row, column=0)
         row += 1
         for val, attribute in enumerate(attributes):
-            tk.Radiobutton(frame, text=attribute, justify=tk.RIGHT, variable=v[player_number], command=player_attribute_choice, value=val).grid(row=row, column=0)
+            tk.Radiobutton(frame, text=attribute, justify=tk.RIGHT,
+                           variable=v[player_number],
+                           command=player_attribute_choice, value=val).grid(
+                           row=row, column=0)
             row += 1
         # scroll bar
-        tk.Scale(frame, variable=v_emotions[player_number], orient=tk.HORIZONTAL, length=300, from_=0, to=1, tickinterval=5, resolution=0.001).grid(row=row, column=0)
+        tk.Scale(frame, variable=v_emotions[player_number],
+                 orient=tk.HORIZONTAL, length=300, from_=0, to=1,
+                 tickinterval=5, resolution=0.001).grid(row=row, column=0)
         row += 1
-        tk.Button(frame, text="GAMBLE!", width="27", bg="grey", command=submit_button).grid(row=row, column=0)
+        tk.Button(frame, text="GAMBLE!", width="27", bg="grey",
+                  command=submit_button).grid(row=row, column=0)
 
 
 def myfunction(event):
