@@ -5,10 +5,14 @@ Created on Tue Sep 24 21:37:28 2019
 @author: battu
 """
 # The code for implementing the Cards, decks and flushes.
-from PokerGame import *
+from PokerLib.Card import *
+from PokerLib.Deck import *
+from PokerLib.Player import *
+from PokerLib.PokerRules import *
+
 import numpy as np
 import math
-
+import random
 
 
 # from PokerScore import *
