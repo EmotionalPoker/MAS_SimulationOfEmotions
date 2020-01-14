@@ -4,7 +4,6 @@ Created on January 1 2020
 @author: Hari Vidharth
 """
 
-
 import itertools
 
 
@@ -17,7 +16,7 @@ class Poker:
     def __init__(self, communitycards, *player_cards):
         self.cardclass = ["♣", "♦", "♥", "♠"]
         self.rank = ["2", "3", "4", "5", "6", "7", "8", "9",
-                "10", "J", "Q", "K", "A"]
+                     "10", "J", "Q", "K", "A"]
         self.rrank = ["10", "J", "Q", "K", "A"]
         self.playercards = []
         self.communitycards = communitycards
@@ -46,7 +45,7 @@ class Poker:
         playercount = []
         flushplayercount = []
         for item in self.playercards:
-            playercommunitycards.append(item+self.communitycards)
+            playercommunitycards.append(item + self.communitycards)
         # print(playercommunitycards)
         for items in playercommunitycards:
             for item in items:
@@ -113,7 +112,7 @@ class Poker:
         playercount = []
         flushplayercount = []
         for item in self.playercards:
-            playercommunitycards.append(item+self.communitycards)
+            playercommunitycards.append(item + self.communitycards)
         # print(playercommunitycards)
         for items in playercommunitycards:
             for item in items:
@@ -196,11 +195,10 @@ class Poker:
          function.
          """
         value = []
-        player = []
         playercommunitycards = []
         player = []
         for item in self.playercards:
-            playercommunitycards.append(item+self.communitycards)
+            playercommunitycards.append(item + self.communitycards)
         # print(playercommunitycards)
         for items in playercommunitycards:
             for item in items:
@@ -250,11 +248,10 @@ class Poker:
         next check function.
         """
         value = []
-        player = []
         playercommunitycards = []
         player = []
         for item in self.playercards:
-            playercommunitycards.append(item+self.communitycards)
+            playercommunitycards.append(item + self.communitycards)
         # print(playercommunitycards)
         for items in playercommunitycards:
             for item in items:
@@ -345,7 +342,7 @@ class Poker:
         playercommunitycards = []
         player = []
         for item in self.playercards:
-            playercommunitycards.append(item+self.communitycards)
+            playercommunitycards.append(item + self.communitycards)
         # print(playercommunitycards)
         value = []
         for items in playercommunitycards:
@@ -413,7 +410,7 @@ class Poker:
         playercount = []
         flushplayercount = []
         for item in self.playercards:
-            playercommunitycards.append(item+self.communitycards)
+            playercommunitycards.append(item + self.communitycards)
         # print(playercommunitycards)
         for items in playercommunitycards:
             for item in items:
@@ -455,11 +452,10 @@ class Poker:
          function.
          """
         value = []
-        player = []
         playercommunitycards = []
         player = []
         for item in self.playercards:
-            playercommunitycards.append(item+self.communitycards)
+            playercommunitycards.append(item + self.communitycards)
         # print(playercommunitycards)
         for items in playercommunitycards:
             for item in items:

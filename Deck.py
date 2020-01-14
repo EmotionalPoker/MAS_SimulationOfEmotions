@@ -5,6 +5,9 @@ Created on January 1 2020
 @author: Hari Vidharth
 """
 
+import random
+from Card import Card
+
 
 class Deck:
     """
