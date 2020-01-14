@@ -33,7 +33,7 @@ def page2():
    f.write( players)
    f.close()
    window.destroy()
-   import page2
+   import UI_2
 
 heading = Label(text = "ENTER PLAYERS TO CONTINUE").pack()
 
