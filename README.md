@@ -1,3 +1,6 @@
+Group A07: Design of Multi Agents Systems
+Project: Simulation of Agents with emotions in a game of poker
+
 #### Instructions:
 
 1. Download the repository.
