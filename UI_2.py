@@ -43,7 +43,7 @@ def submit_button():
      f.close()
 
      root.destroy()
-     import page3
+     import UI_3
 
 def data():
     row = 0
