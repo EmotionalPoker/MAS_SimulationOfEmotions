@@ -5,7 +5,9 @@ import sys
 import pickle
 root=Tk()
 #store player emotions and emotional level's in a list
-player_count = int( sys.argv[1] )
+f = open('var.txt','r')
+arg = f.readline()
+player_count = int(arg )
 player_emotions = []
 player_emotion_values = []
 
@@ -41,7 +43,7 @@ def submit_button():
      f.close()
 
      root.destroy()
-     os.system('python page3.py ' + str(player_count))
+     import page3
 
 def data():
     row = 0

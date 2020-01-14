@@ -33,7 +33,7 @@ def page2():
    f.write( players)
    f.close()
    window.destroy()
-   os.system('python page2.py ' + str(playervalue.get()))
+   import page2
 
 heading = Label(text = "ENTER PLAYERS TO CONTINUE").pack()
 
